@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <link rel="icon" type="image/png" href="/gambar/Group 23.png"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kelola User — Admin SIGAB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--navy:#0f2c4a;--navy2:#163659;--blue:#1d6fa4;--gold:#c9a84c;--gold2:#e8c96a;--text:#1a2535;--muted:#6b7280;--border:#e5e7eb;--bg:#f8fafc;--success:#16a34a;--danger:#dc2626;--sidebar-w:230px;--header-h:58px}
+    html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--bg)}
+    .admin-layout{display:flex;height:100vh;overflow:hidden}
+    .sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--navy);display:flex;flex-direction:column;overflow-y:auto}
+    .sidebar-brand{padding:18px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px}
+    .sidebar-logo{width:34px;height:34px;background:white;border-radius:8px;overflow:hidden;flex-shrink:0}
+    .sidebar-logo img{width:100%;height:100%;object-fit:contain;padding:3px}
+    .sidebar-title{color:white;font-size:14px;font-weight:800}.sidebar-title span{color:var(--gold2)}
+    .sidebar-sub{color:rgba(255,255,255,0.35);font-size:9px;letter-spacing:.06em;text-transform:uppercase}
+    .sidebar-nav{flex:1;padding:12px 10px}
+    .nav-group{margin-bottom:6px}
+    .nav-group-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);padding:10px 10px 5px}
+    .sidebar-link{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.65);text-decoration:none;transition:all .15s;margin-bottom:1px}
+    .sidebar-link i{width:18px;text-align:center;font-size:13px}
+    .sidebar-link:hover{background:rgba(255,255,255,0.07);color:white}
+    .sidebar-link.active{background:rgba(201,168,76,0.18);color:var(--gold2)}
+    .sidebar-user{padding:14px 16px;border-top:1px solid rgba(255,255,255,0.08)}
+    .sidebar-user-info{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .user-avatar{width:34px;height:34px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--navy);font-size:14px;font-weight:800;flex-shrink:0}
+    .user-name{font-size:12px;font-weight:600;color:white}.user-role{font-size:10px;color:rgba(255,255,255,0.4)}
+    .btn-logout{width:100%;padding:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:rgba(255,255,255,0.5);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:7px}
+    .btn-logout:hover{background:rgba(220,38,38,0.15);color:#fca5a5}
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+    .topbar{height:var(--header-h);background:white;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0}
+    .topbar-left h1{font-size:15px;font-weight:700;color:var(--navy)}.topbar-left p{font-size:11px;color:var(--muted)}
+    .topbar-right{display:flex;gap:8px}
+    .btn{padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid transparent;transition:all .15s;font-family:inherit;display:flex;align-items:center;gap:6px}
+    .btn-primary{background:var(--navy);color:white;border-color:var(--navy)}.btn-primary:hover{background:var(--navy2)}
+    .btn-outline{background:white;border-color:var(--border);color:var(--text)}.btn-outline:hover{border-color:#adb5bd}
+    .btn-danger{background:#fee2e2;border-color:#fecaca;color:var(--danger)}.btn-danger:hover{background:#fecaca}
+    .btn-sm{padding:5px 10px;font-size:11px}
+    .content{flex:1;overflow-y:auto;padding:24px 28px}
+
+    /* USER CARDS */
+    .users-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:24px}
+    .user-card{background:white;border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;align-items:flex-start;gap:14px;transition:box-shadow .2s}
+    .user-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.07)}
+    .user-card.inactive{opacity:.6}
+    .ua{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;flex-shrink:0}
+    .ua.admin{background:#fef3c7;color:#92400e}
+    .ua.editor{background:#dbeafe;color:#1e40af}
+    .user-info{flex:1;min-width:0}
+    .user-info h4{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:2px}
+    .user-info .uname{font-size:11px;color:var(--muted);font-family:monospace;margin-bottom:6px}
+    .user-meta{display:flex;gap:6px;flex-wrap:wrap}
+    .badge{display:inline-block;padding:2px 9px;border-radius:100px;font-size:10px;font-weight:700}
+    .badge-admin{background:#fef3c7;color:#92400e}
+    .badge-editor{background:#dbeafe;color:#1e40af}
+    .badge-aktif{background:#dcfce7;color:#15803d}
+    .badge-nonaktif{background:#fee2e2;color:#b91c1c}
+    .user-actions{display:flex;gap:4px;margin-top:10px}
+    .user-date{font-size:10px;color:var(--muted);margin-top:4px}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:9000;padding:20px}
+    .modal-overlay.open{display:flex}
+    .modal{background:white;border-radius:14px;width:100%;max-width:440px;box-shadow:0 24px 64px rgba(0,0,0,0.3);animation:modalIn .25s ease}
+    @keyframes modalIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+    .modal-header{padding:18px 22px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .modal-header h3{font-size:15px;font-weight:700;color:var(--navy)}
+    .modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:5px}
+    .modal-body{padding:20px 22px}
+    .modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+    .form-group{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
+    .form-group label{font-size:11px;font-weight:600;color:var(--muted)}
+    .form-group label span{color:var(--danger)}
+    .form-control{width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--text);background:var(--bg)}
+    .form-control:focus{outline:none;border-color:var(--blue);background:white}
+    .form-hint{font-size:10px;color:var(--muted);margin-top:3px}
+    .alert-box{padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:14px;display:none}
+    .alert-box.show{display:block}
+    .alert-error{background:#fef2f2;border:1px solid #fecaca;color:var(--danger)}
+    .info-banner{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 16px;font-size:12px;color:#1d4ed8;margin-bottom:20px;display:flex;gap:8px}
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo"><img src="/gambar/Group 23.png" alt="Logo SIGAB"/></div>
+      <div><div class="sidebar-title"><span>S</span>IGAB</div><div class="sidebar-sub">Panel Admin</div></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group">
+        <div class="nav-group-label">Utama</div>
+        <a href="dashboard.html"     class="sidebar-link"><i class="fa fa-gauge"></i> Dashboard</a>
+        <a href="aset-tanah.html"    class="sidebar-link"><i class="fa fa-map"></i> Aset Tanah (KIB A)</a>
+        <a href="aset-bangunan.html" class="sidebar-link"><i class="fa fa-building"></i> Aset Bangunan (KIB C)</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Pengelolaan</div>
+        <a href="validasi.html" class="sidebar-link"><i class="fa fa-circle-check"></i> Validasi Aset</a>
+        <a href="ekspor.html"   class="sidebar-link"><i class="fa fa-file-excel"></i> Ekspor Laporan</a>
+      </div>
+      <div class="nav-group" data-admin-only>
+        <div class="nav-group-label">Administrasi</div>
+        <a href="users.html" class="sidebar-link active"><i class="fa fa-users"></i> Kelola User</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Publik</div>
+        <a href="/"          class="sidebar-link"><i class="fa fa-house"></i> Beranda</a>
+        <a href="/peta.html" class="sidebar-link"><i class="fa fa-map-location-dot"></i> Peta Publik</a>
+      </div>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-info">
+        <div class="user-avatar" id="user-initial">—</div>
+        <div><div class="user-name" id="admin-name">—</div><div class="user-role" id="admin-role">—</div></div>
+      </div>
+      <button class="btn-logout" onclick="logout()"><i class="fa fa-right-from-bracket"></i> Keluar</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <h1>👥 Kelola User</h1>
+        <p>Manajemen akun staf BPKAD yang dapat mengakses panel admin</p>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-outline" onclick="loadUsers()"><i class="fa fa-rotate"></i> Refresh</button>
+        <button class="btn btn-primary" onclick="openModal()"><i class="fa fa-plus"></i> Tambah User</button>
+      </div>
+    </div>
+    <div class="content">
+
+      <div class="info-banner">
+        <i class="fa fa-circle-info"></i>
+        <div><strong>Role Admin</strong> dapat mengelola user dan menghapus data. <strong>Role Editor</strong> hanya dapat tambah dan edit data aset, tidak dapat menghapus atau mengelola user.</div>
+      </div>
+
+      <div class="users-grid" id="users-grid">
+        <div style="text-align:center;padding:32px;color:var(--muted);font-size:12px;grid-column:1/-1">
+          <i class="fa fa-spinner fa-spin"></i> Memuat...
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TAMBAH USER -->
+<div class="modal-overlay" id="modal-user">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">➕ Tambah User Baru</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert-box alert-error" id="alert-error"></div>
+      <div class="form-group">
+        <label>Nama Lengkap <span>*</span></label>
+        <input type="text" class="form-control" id="f-nama" placeholder="Nama lengkap staf..."/>
+      </div>
+      <div class="form-group">
+        <label>Username <span>*</span></label>
+        <input type="text" class="form-control" id="f-username" placeholder="contoh: staf.bpkad"/>
+        <div class="form-hint">Gunakan huruf kecil, angka, dan titik saja.</div>
+      </div>
+      <div class="form-group">
+        <label>Password <span>*</span></label>
+        <input type="password" class="form-control" id="f-password" placeholder="Minimal 8 karakter..."/>
+        <div class="form-hint">Minimal 8 karakter, kombinasi huruf dan angka.</div>
+      </div>
+      <div class="form-group">
+        <label>Role <span>*</span></label>
+        <select class="form-control" id="f-role">
+          <option value="editor">Editor — Tambah & edit data aset</option>
+          <option value="admin">Admin — Akses penuh termasuk kelola user</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Batal</button>
+      <button class="btn btn-primary" onclick="tambahUser()" id="btn-tambah">
+        <i class="fa fa-save"></i> Simpan
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="/admin/js/admin.js"></script>
+<script>
+  let currentUserId = null;
+
+  (async function init() {
+    const user = await requireLogin();
+    if (!user) return;
+    // Hanya admin yang boleh akses halaman ini
+    if (user.role !== 'admin') {
+      alert('Akses ditolak. Hanya administrator yang dapat mengelola user.');
+      window.location.replace('dashboard.html');
+      return;
+    }
+    renderUserInfo();
+    setActiveNav();
+    document.getElementById('user-initial').textContent = (user.nama_lengkap||'A')[0].toUpperCase();
+    loadUsers();
+  })();
+
+  async function loadUsers() {
+    document.getElementById('users-grid').innerHTML =
+      `<div style="text-align:center;padding:32px;color:var(--muted);font-size:12px;grid-column:1/-1"><i class="fa fa-spinner fa-spin"></i> Memuat...</div>`;
+    try {
+      const res   = await apiFetch('/api/users');
+      const users = await res.json();
+      renderUsers(users);
+    } catch(e) {
+      document.getElementById('users-grid').innerHTML =
+        `<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--muted)">Gagal memuat data user.</div>`;
+    }
+  }
+
+  function renderUsers(users) {
+    if (!users.length) {
+      document.getElementById('users-grid').innerHTML =
+        `<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--muted)">Belum ada user.</div>`;
+      return;
+    }
+    document.getElementById('users-grid').innerHTML = users.map(u => `
+      <div class="user-card ${u.aktif ? '' : 'inactive'}">
+        <div class="ua ${u.role}">${(u.nama_lengkap||'?')[0].toUpperCase()}</div>
+        <div class="user-info">
+          <h4>${u.nama_lengkap||'—'}</h4>
+          <div class="uname">@${u.username}</div>
+          <div class="user-meta">
+            <span class="badge badge-${u.role}">${u.role === 'admin' ? '🔑 Admin' : '✏ Editor'}</span>
+            <span class="badge badge-${u.aktif ? 'aktif' : 'nonaktif'}">${u.aktif ? 'Aktif' : 'Nonaktif'}</span>
+          </div>
+          <div class="user-date">Dibuat: ${fmtDate(u.created_at)} ${u.last_login ? '· Login: ' + fmtDate(u.last_login) : ''}</div>
+          <div class="user-actions">
+            <button class="btn btn-outline btn-sm" onclick="toggleAktif(${u.id}, ${u.aktif})">
+              <i class="fa fa-${u.aktif ? 'ban' : 'check'}"></i> ${u.aktif ? 'Nonaktifkan' : 'Aktifkan'}
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="hapusUser(${u.id}, '${u.username}')">
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function openModal() {
+    document.getElementById('f-nama').value     = '';
+    document.getElementById('f-username').value = '';
+    document.getElementById('f-password').value = '';
+    document.getElementById('f-role').value     = 'editor';
+    document.getElementById('alert-error').classList.remove('show');
+    document.getElementById('modal-user').classList.add('open');
+  }
+  function closeModal() {
+    document.getElementById('modal-user').classList.remove('open');
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('alert-error');
+    el.textContent = msg;
+    el.classList.add('show');
+  }
+
+  async function tambahUser() {
+    const nama     = document.getElementById('f-nama').value.trim();
+    const username = document.getElementById('f-username').value.trim().toLowerCase();
+    const password = document.getElementById('f-password').value;
+    const role     = document.getElementById('f-role').value;
+
+    if (!nama || !username || !password) return showError('Semua field wajib diisi.');
+    if (password.length < 8) return showError('Password minimal 8 karakter.');
+
+    const btn = document.getElementById('btn-tambah');
+    btn.disabled = true;
+    try {
+      const res  = await apiFetch('/api/users', {
+        method: 'POST',
+        body: JSON.stringify({ nama_lengkap: nama, username, password, role })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal menambahkan user.');
+      showToast(`User @${username} berhasil ditambahkan!`);
+      closeModal();
+      loadUsers();
+    } catch(e) {
+      showError(e.message);
+    } finally { btn.disabled = false; }
+  }
+
+  async function toggleAktif(id, aktif) {
+    const action = aktif ? 'nonaktifkan' : 'aktifkan';
+    if (!confirm(`Yakin ingin ${action} user ini?`)) return;
+    try {
+      const res = await apiFetch(`/api/users/${id}/toggle`, { method:'PUT' });
+      if (!res.ok) throw new Error('Gagal mengubah status.');
+      showToast(`User berhasil di${action}kan.`);
+      loadUsers();
+    } catch(e) { showToast(e.message, 'error'); }
+  }
+
+  async function hapusUser(id, username) {
+    if (!confirm(`Yakin ingin menghapus user @${username}? Tindakan ini tidak dapat dibatalkan.`)) return;
+    try {
+      const res = await apiFetch(`/api/users/${id}`, { method:'DELETE' });
+      if (!res.ok) throw new Error('Gagal menghapus user.');
+      showToast(`User @${username} berhasil dihapus.`, 'warning');
+      loadUsers();
+    } catch(e) { showToast(e.message, 'error'); }
+  }
+</script>
+</body>
+</html>

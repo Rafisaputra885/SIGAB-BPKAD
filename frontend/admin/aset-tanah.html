@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <link rel="icon" type="image/png" href="/gambar/Group 23.png"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Aset Tanah (KIB A) — Admin SIGAB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:#0f2c4a; --navy2:#163659; --blue:#1d6fa4;
+      --gold:#c9a84c; --gold2:#e8c96a;
+      --text:#1a2535; --muted:#6b7280;
+      --border:#e5e7eb; --bg:#f8fafc; --surface:#ffffff;
+      --sidebar-w:230px; --header-h:58px;
+      --success:#16a34a; --warning:#d97706; --danger:#dc2626;
+    }
+    html,body { height:100%; font-family:'Plus Jakarta Sans',sans-serif; color:var(--text); background:var(--bg); }
+
+    /* ── LAYOUT ── */
+    .admin-layout { display:flex; height:100vh; overflow:hidden; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width:var(--sidebar-w); flex-shrink:0; background:var(--navy);
+      display:flex; flex-direction:column;
+      border-right:1px solid rgba(255,255,255,0.06); overflow-y:auto;
+    }
+    .sidebar-brand {
+      padding:18px 20px 16px; border-bottom:1px solid rgba(255,255,255,0.08);
+      display:flex; align-items:center; gap:10px; flex-shrink:0;
+    }
+    .sidebar-logo { width:38px; height:38px; background:transparent; border-radius:8px; overflow:hidden; flex-shrink:0; }
+    .sidebar-logo img { width:100%; height:100%; object-fit:contain; padding:3px; }
+    .sidebar-title { color:white; font-size:14px; font-weight:800; line-height:1.2; }
+    .sidebar-title span { color:var(--gold2); }
+    .sidebar-sub { color:rgba(255,255,255,0.35); font-size:9px; letter-spacing:.06em; text-transform:uppercase; }
+    .sidebar-nav { flex:1; padding:12px 10px; }
+    .nav-group { margin-bottom:6px; }
+    .nav-group-label { font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,0.3); padding:10px 10px 5px; }
+    .sidebar-link {
+      display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:8px;
+      font-size:13px; font-weight:500; color:rgba(255,255,255,0.65);
+      text-decoration:none; transition:all .15s; margin-bottom:1px;
+    }
+    .sidebar-link i { width:18px; text-align:center; font-size:13px; }
+    .sidebar-link:hover { background:rgba(255,255,255,0.07); color:white; }
+    .sidebar-link.active { background:rgba(201,168,76,0.18); color:var(--gold2); }
+    .sidebar-user { padding:14px 16px; border-top:1px solid rgba(255,255,255,0.08); flex-shrink:0; }
+    .sidebar-user-info { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .user-avatar { width:34px; height:34px; background:var(--gold); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--navy); font-size:14px; font-weight:800; flex-shrink:0; }
+    .user-name { font-size:12px; font-weight:600; color:white; }
+    .user-role { font-size:10px; color:rgba(255,255,255,0.4); }
+    .btn-logout { width:100%; padding:8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:7px; color:rgba(255,255,255,0.5); font-size:12px; font-weight:500; cursor:pointer; font-family:inherit; transition:all .15s; display:flex; align-items:center; justify-content:center; gap:7px; }
+    .btn-logout:hover { background:rgba(220,38,38,0.15); color:#fca5a5; }
+
+    /* ── MAIN ── */
+    .main { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
+    .topbar { height:var(--header-h); background:white; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 24px; flex-shrink:0; gap:12px; }
+    .topbar-left h1 { font-size:15px; font-weight:700; color:var(--navy); }
+    .topbar-left p { font-size:11px; color:var(--muted); }
+    .topbar-right { display:flex; align-items:center; gap:8px; }
+    .btn { padding:8px 14px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; border:1.5px solid transparent; transition:all .15s; font-family:inherit; display:flex; align-items:center; gap:6px; }
+    .btn-primary { background:var(--navy); color:white; border-color:var(--navy); }
+    .btn-primary:hover { background:var(--navy2); }
+    .btn-outline { background:white; border-color:var(--border); color:var(--text); }
+    .btn-outline:hover { border-color:#adb5bd; background:var(--bg); }
+    .btn-danger  { background:#fee2e2; border-color:#fecaca; color:var(--danger); }
+    .btn-danger:hover  { background:#fecaca; }
+    .btn-success { background:#dcfce7; border-color:#bbf7d0; color:var(--success); }
+    .btn-sm { padding:5px 10px; font-size:11px; }
+
+    .content { flex:1; overflow-y:auto; padding:20px 24px; }
+
+    /* ── FILTER BAR ── */
+    .filter-bar {
+      background:white; border:1px solid var(--border); border-radius:10px;
+      padding:14px 18px; margin-bottom:16px;
+      display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;
+    }
+    .filter-group { display:flex; flex-direction:column; gap:4px; }
+    .filter-group label { font-size:10px; font-weight:600; color:var(--muted); }
+    .filter-input {
+      padding:7px 10px; border:1.5px solid var(--border); border-radius:7px;
+      font-size:12px; font-family:inherit; background:var(--bg); color:var(--text);
+      transition:border-color .15s; min-width:140px;
+    }
+    .filter-input:focus { outline:none; border-color:var(--blue); background:white; }
+    .filter-group.grow { flex:1; min-width:180px; }
+
+    /* ── TABLE ── */
+    .table-card { background:white; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+    .table-head { padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .table-head h2 { font-size:13px; font-weight:700; color:var(--navy); }
+    .table-info { font-size:11px; color:var(--muted); }
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:12px; }
+    th { padding:10px 12px; text-align:left; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); background:var(--bg); border-bottom:1px solid var(--border); white-space:nowrap; }
+    td { padding:10px 12px; border-bottom:1px solid #f3f4f6; vertical-align:middle; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:#fafbfc; }
+    .td-nibar { font-family:monospace; font-size:10px; color:var(--muted); max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .td-nama { font-weight:600; color:var(--navy); }
+    .td-opd { max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); }
+    .td-luas { font-weight:600; text-align:right; }
+    .actions { display:flex; gap:4px; }
+
+    /* ── PAGINATION ── */
+    .pagination { display:flex; align-items:center; justify-content:space-between; padding:12px 18px; border-top:1px solid var(--border); }
+    .pagination-info { font-size:11px; color:var(--muted); }
+    .pagination-btns { display:flex; gap:4px; }
+    .page-btn { padding:5px 10px; border:1.5px solid var(--border); border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; background:white; color:var(--text); transition:all .15s; font-family:inherit; }
+    .page-btn:hover:not(:disabled) { border-color:var(--blue); color:var(--blue); }
+    .page-btn.active { background:var(--navy); color:white; border-color:var(--navy); }
+    .page-btn:disabled { opacity:.4; cursor:not-allowed; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,0.5);
+      display:none; align-items:center; justify-content:center;
+      z-index:9000; padding:20px;
+    }
+    .modal-overlay.open { display:flex; }
+    .modal {
+      background:white; border-radius:14px; width:100%; max-width:720px;
+      max-height:90vh; display:flex; flex-direction:column;
+      box-shadow:0 24px 64px rgba(0,0,0,0.3);
+      animation:modalIn .25s ease;
+    }
+    @keyframes modalIn { from{opacity:0;transform:scale(.96)} to{opacity:1;transform:scale(1)} }
+    .modal-header {
+      padding:18px 22px 16px; border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+    }
+    .modal-header h3 { font-size:15px; font-weight:700; color:var(--navy); }
+    .modal-close { background:none; border:none; font-size:18px; cursor:pointer; color:var(--muted); padding:2px 6px; border-radius:5px; }
+    .modal-close:hover { background:var(--bg); color:var(--text); }
+    .modal-body { padding:20px 22px; overflow-y:auto; flex:1; }
+    .modal-footer { padding:14px 22px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:8px; flex-shrink:0; }
+
+    /* ── FORM ── */
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .form-grid.full { grid-template-columns:1fr; }
+    .form-group { display:flex; flex-direction:column; gap:4px; }
+    .form-group.span2 { grid-column:span 2; }
+    .form-group label { font-size:11px; font-weight:600; color:var(--muted); }
+    .form-group label span { color:var(--danger); }
+    .form-control {
+      padding:8px 11px; border:1.5px solid var(--border); border-radius:8px;
+      font-size:13px; font-family:inherit; color:var(--text); background:var(--bg);
+      transition:border-color .15s;
+    }
+    .form-control:focus { outline:none; border-color:var(--blue); background:white; }
+    .form-section { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:16px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border); grid-column:span 2; }
+
+    /* ── MINI MAP ── */
+    .map-wrap { position:relative; }
+    #mini-map { height:220px; border-radius:8px; border:1.5px solid var(--border); z-index:1; }
+    .map-hint { font-size:10px; color:var(--muted); margin-top:5px; }
+    .coord-display { display:flex; gap:8px; margin-top:8px; }
+    .coord-box { flex:1; padding:6px 10px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-size:11px; font-family:monospace; color:var(--navy); }
+
+    /* Empty state */
+    .empty-state { text-align:center; padding:48px 20px; color:var(--muted); }
+    .empty-state i { font-size:36px; margin-bottom:12px; opacity:.3; }
+    .empty-state p { font-size:13px; }
+
+    /* Loading */
+    .loading-row td { text-align:center; padding:32px; color:var(--muted); font-size:12px; }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo"><img src="/gambar/Group 23.png" alt="Logo SIGAB"/></div>
+      <div><div class="sidebar-title"><span>S</span>IGAB</div><div class="sidebar-sub">Panel Admin</div></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group">
+        <div class="nav-group-label">Utama</div>
+        <a href="dashboard.html"     class="sidebar-link"><i class="fa fa-gauge"></i> Dashboard</a>
+        <a href="aset-tanah.html"    class="sidebar-link active"><i class="fa fa-map"></i> Aset Tanah (KIB A)</a>
+        <a href="aset-bangunan.html" class="sidebar-link"><i class="fa fa-building"></i> Aset Bangunan (KIB C)</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Pengelolaan</div>
+        <a href="validasi.html" class="sidebar-link"><i class="fa fa-circle-check"></i> Validasi Aset</a>
+        <a href="ekspor.html"   class="sidebar-link"><i class="fa fa-file-excel"></i> Ekspor Laporan</a>
+      </div>
+      <div class="nav-group" data-admin-only>
+        <div class="nav-group-label">Administrasi</div>
+        <a href="users.html" class="sidebar-link"><i class="fa fa-users"></i> Kelola User</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Publik</div>
+        <a href="/" class="sidebar-link"><i class="fa fa-house"></i> Beranda</a>
+        <a href="/peta.html" class="sidebar-link"><i class="fa fa-map-location-dot"></i> Peta Publik</a>
+      </div>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-info">
+        <div class="user-avatar" id="user-initial">—</div>
+        <div><div class="user-name" id="admin-name">—</div><div class="user-role" id="admin-role">—</div></div>
+      </div>
+      <button class="btn-logout" onclick="logout()"><i class="fa fa-right-from-bracket"></i> Keluar</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <h1>🗺 Aset Tanah — KIB A</h1>
+        <p>Kelola data inventaris aset tanah Pemerintah Kabupaten Bojonegoro</p>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-outline" onclick="loadData()"><i class="fa fa-rotate"></i> Refresh</button>
+        <button class="btn btn-primary" onclick="openModal('tambah')"><i class="fa fa-plus"></i> Tambah Aset</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- FILTER -->
+      <div class="filter-bar">
+        <div class="filter-group grow">
+          <label>Cari (NIBAR / OPD / Nama Barang)</label>
+          <input type="text" class="filter-input" id="f-search" placeholder="Ketik untuk cari..." oninput="debounceLoad()"/>
+        </div>
+        <div class="filter-group">
+          <label>Kecamatan</label>
+          <select class="filter-input" id="f-kecamatan" onchange="loadData()">
+            <option value="">Semua Kecamatan</option>
+            <option>BOJONEGORO</option><option>BALEN</option><option>BAURENO</option>
+            <option>BUBULAN</option><option>DANDER</option><option>GAYAM</option>
+            <option>GONDANG</option><option>KALITIDU</option><option>KANOR</option>
+            <option>KAPAS</option><option>KASIMAN</option><option>KEDEWAN</option>
+            <option>KEDUNGADEM</option><option>KEPOHBARU</option><option>MALO</option>
+            <option>MARGOMULYO</option><option>NGAMBON</option><option>NGASEM</option>
+            <option>NGRAHO</option><option>PADANGAN</option><option>PURWOSARI</option>
+            <option>SEKAR</option><option>SUGIHWARAS</option><option>SUKOSEWU</option>
+            <option>TAMBAKREJO</option><option>TEMAYANG</option><option>TRUCUK</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>&nbsp;</label>
+          <button class="btn btn-outline" onclick="resetFilter()"><i class="fa fa-xmark"></i> Reset</button>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-card">
+        <div class="table-head">
+          <h2>Data Aset Tanah</h2>
+          <span class="table-info" id="table-info">Memuat...</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>NIBAR</th>
+                <th>OPD</th>
+                <th>Nama Barang</th>
+                <th>Spesifikasi</th>
+                <th>Desa</th>
+                <th>Kecamatan</th>
+                <th style="text-align:right">Luas (m²)</th>
+                <th>Hak</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="table-body">
+              <tr class="loading-row"><td colspan="10"><i class="fa fa-spinner fa-spin"></i> Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <span class="pagination-info" id="pag-info">—</span>
+          <div class="pagination-btns" id="pag-btns"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL TAMBAH / EDIT ══ -->
+<div class="modal-overlay" id="modal-form">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">Tambah Aset Tanah</h3>
+      <button class="modal-close" onclick="closeModal('modal-form')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="form-aset" onsubmit="submitForm(event)">
+        <input type="hidden" id="f-id"/>
+        <div class="form-grid">
+          <div class="form-section">Identitas Aset</div>
+          <div class="form-group">
+            <label>NIBAR <span>*</span></label>
+            <input type="text" class="form-control" id="f-nibar" required placeholder="Nomor NIBAR..."/>
+          </div>
+          <div class="form-group">
+            <label>Nomor Register</label>
+            <input type="text" class="form-control" id="f-nomor_register" placeholder="Nomor register..."/>
+          </div>
+          <div class="form-group span2">
+            <label>OPD Pengelola <span>*</span></label>
+            <input type="text" class="form-control" id="f-opd" required placeholder="Nama OPD..."/>
+          </div>
+          <div class="form-group">
+            <label>Nama Barang <span>*</span></label>
+            <input type="text" class="form-control" id="f-nama_barang" required placeholder="Nama barang..."/>
+          </div>
+          <div class="form-group">
+            <label>Spesifikasi</label>
+            <input type="text" class="form-control" id="f-spesifikasi" placeholder="Spesifikasi..."/>
+          </div>
+          <div class="form-group span2">
+            <label>Spesifikasi Lainnya</label>
+            <input type="text" class="form-control" id="f-spesifikasi_lainnya" placeholder="Keterangan tambahan..."/>
+          </div>
+
+          <div class="form-section">Lokasi</div>
+          <div class="form-group span2">
+            <label>Alamat / Lokasi</label>
+            <textarea class="form-control" id="f-alamat" rows="2" placeholder="Alamat lengkap..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Desa / Kelurahan</label>
+            <input type="text" class="form-control" id="f-desa_kelurahan" placeholder="Nama desa..."/>
+          </div>
+          <div class="form-group">
+            <label>Kecamatan</label>
+            <select class="form-control" id="f-kecamatan-form">
+              <option value="">-- Pilih Kecamatan --</option>
+              <option>BOJONEGORO</option><option>BALEN</option><option>BAURENO</option>
+              <option>BUBULAN</option><option>DANDER</option><option>GAYAM</option>
+              <option>GONDANG</option><option>KALITIDU</option><option>KANOR</option>
+              <option>KAPAS</option><option>KASIMAN</option><option>KEDEWAN</option>
+              <option>KEDUNGADEM</option><option>KEPOHBARU</option><option>MALO</option>
+              <option>MARGOMULYO</option><option>NGAMBON</option><option>NGASEM</option>
+              <option>NGRAHO</option><option>PADANGAN</option><option>PURWOSARI</option>
+              <option>SEKAR</option><option>SUGIHWARAS</option><option>SUKOSEWU</option>
+              <option>TAMBAKREJO</option><option>TEMAYANG</option><option>TRUCUK</option>
+            </select>
+          </div>
+
+          <!-- Mini peta -->
+          <div class="form-group span2">
+            <label>Koordinat (klik peta untuk memilih lokasi)</label>
+            <div class="map-wrap">
+              <div id="mini-map"></div>
+              <div class="map-hint">💡 Klik di peta untuk menentukan/mengubah koordinat aset</div>
+              <div class="coord-display">
+                <div class="coord-box" id="disp-lat">Lat: —</div>
+                <div class="coord-box" id="disp-lng">Lng: —</div>
+              </div>
+            </div>
+            <input type="hidden" id="f-latitude"/>
+            <input type="hidden" id="f-longitude"/>
+          </div>
+
+          <div class="form-section">Data Tanah</div>
+          <div class="form-group">
+            <label>Luas (m²)</label>
+            <input type="number" class="form-control" id="f-luas_m2" step="0.01" placeholder="0.00"/>
+          </div>
+          <div class="form-group">
+            <label>Satuan</label>
+            <input type="text" class="form-control" id="f-satuan" placeholder="Meter Persegi" value="Meter Persegi"/>
+          </div>
+          <div class="form-group">
+            <label>Nama Hak</label>
+            <select class="form-control" id="f-nama_hak">
+              <option value="">-- Pilih --</option>
+              <option>Hak Pakai</option><option>Hak Milik</option>
+              <option>Hak Pengelolaan</option><option>Hak Guna Bangunan</option>
+              <option>Hak Guna Usaha</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Nomor Hak</label>
+            <input type="text" class="form-control" id="f-nomor_hak" placeholder="Nomor sertifikat..."/>
+          </div>
+          <div class="form-group">
+            <label>Tanggal Hak</label>
+            <input type="date" class="form-control" id="f-tanggal_hak"/>
+          </div>
+          <div class="form-group">
+            <label>Nama Kepemilikan Dokumen</label>
+            <input type="text" class="form-control" id="f-nama_kepemilikan_d" placeholder="Nama di sertifikat..."/>
+          </div>
+
+          <div class="form-section">Perolehan</div>
+          <div class="form-group">
+            <label>Nilai Perolehan (Rp)</label>
+            <input type="number" class="form-control" id="f-nilai_perolehan" placeholder="0"/>
+          </div>
+          <div class="form-group">
+            <label>Cara Perolehan</label>
+            <select class="form-control" id="f-cara_perolehan">
+              <option value="">-- Pilih --</option>
+              <option>Pembelian</option><option>Hibah</option><option>Tukar Menukar</option>
+              <option>Pelimpahan</option><option>Wakaf</option><option>Lainnya</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Tanggal Perolehan</label>
+            <input type="date" class="form-control" id="f-tanggal_perolehan"/>
+          </div>
+          <div class="form-group">
+            <label>Status Penggunaan</label>
+            <input type="text" class="form-control" id="f-status_penggunaan" placeholder="Status penggunaan..."/>
+          </div>
+          <div class="form-group span2">
+            <label>Keterangan</label>
+            <textarea class="form-control" id="f-keterangan" rows="2" placeholder="Keterangan tambahan..."></textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-form')">Batal</button>
+      <button class="btn btn-primary" onclick="submitForm(event)" id="btn-submit">
+        <i class="fa fa-save"></i> <span id="btn-submit-text">Simpan</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL DETAIL ══ -->
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <h3>Detail Aset Tanah</h3>
+      <button class="modal-close" onclick="closeModal('modal-detail')">✕</button>
+    </div>
+    <div class="modal-body" id="detail-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-detail')">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/admin/js/admin.js"></script>
+<script>
+  let currentPage = 1;
+  const PER_PAGE  = 20;
+  let totalRows   = 0;
+  let miniMap     = null;
+  let mapMarker   = null;
+  let debTimer    = null;
+  let currentMode = 'tambah'; // 'tambah' | 'edit'
+
+  // ── INIT ──────────────────────────────────────────────
+  (async function init() {
+    const user = await requireLogin();
+    if (!user) return;
+    renderUserInfo();
+    setActiveNav();
+    document.getElementById('user-initial').textContent = (user.nama_lengkap||'A')[0].toUpperCase();
+    loadData();
+  })();
+
+  // ── LOAD DATA ─────────────────────────────────────────
+  async function loadData(page = 1) {
+    currentPage = page;
+    const search    = document.getElementById('f-search').value.trim();
+    const kecamatan = document.getElementById('f-kecamatan').value;
+    const params    = new URLSearchParams({ page, limit: PER_PAGE });
+    if (search)    params.set('search', search);
+    if (kecamatan) params.set('kecamatan', kecamatan);
+
+    document.getElementById('table-body').innerHTML =
+      `<tr class="loading-row"><td colspan="10"><i class="fa fa-spinner fa-spin"></i> Memuat...</td></tr>`;
+
+    try {
+      const res  = await apiFetch(`/api/aset/tanah?${params}`);
+      const data = await res.json();
+      totalRows  = data.total;
+      renderTable(data.data, page);
+      renderPagination(data.total, page);
+      document.getElementById('table-info').textContent =
+        `Total: ${fmtNum(data.total)} aset`;
+    } catch(e) {
+      document.getElementById('table-body').innerHTML =
+        `<tr class="loading-row"><td colspan="10">Gagal memuat data.</td></tr>`;
+    }
+  }
+
+  function debounceLoad() {
+    clearTimeout(debTimer);
+    debTimer = setTimeout(() => loadData(1), 400);
+  }
+
+  function resetFilter() {
+    document.getElementById('f-search').value    = '';
+    document.getElementById('f-kecamatan').value = '';
+    loadData(1);
+  }
+
+  // ── RENDER TABLE ──────────────────────────────────────
+  function renderTable(rows, page) {
+    const tbody = document.getElementById('table-body');
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><i class="fa fa-inbox"></i><p>Tidak ada data ditemukan.</p></div></td></tr>`;
+      return;
+    }
+    const start = (page - 1) * PER_PAGE;
+    tbody.innerHTML = rows.map((r, i) => `
+      <tr>
+        <td>${start + i + 1}</td>
+        <td><div class="td-nibar" title="${r.nibar||''}">${r.nibar||'—'}</div></td>
+        <td><div class="td-opd" title="${r.opd||''}">${(r.opd||'—').replace('.xlsx','')}</div></td>
+        <td><div class="td-nama">${r.nama_barang||'—'}</div></td>
+        <td><div class="td-opd" title="${r.spesifikasi_lainnya||r.spesifikasi||''}">${r.spesifikasi_lainnya||r.spesifikasi||'—'}</div></td>
+        <td>${r.desa_kelurahan||'—'}</td>
+        <td>${r.kecamatan||'—'}</td>
+        <td class="td-luas">${fmtNum(r.luas_m2)} m²</td>
+        <td>${r.nama_hak||'—'}</td>
+        <td>
+          <div class="actions">
+            <button class="btn btn-outline btn-sm" onclick="openDetail(${r.id_tanah})" title="Detail"><i class="fa fa-eye"></i></button>
+            <button class="btn btn-outline btn-sm" onclick="openModal('edit', ${r.id_tanah})" title="Edit"><i class="fa fa-pen"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="hapusAset(${r.id_tanah})" title="Hapus"><i class="fa fa-trash"></i></button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // ── PAGINATION ────────────────────────────────────────
+  function renderPagination(total, page) {
+    const pages = Math.ceil(total / PER_PAGE);
+    const start = (page - 1) * PER_PAGE + 1;
+    const end   = Math.min(page * PER_PAGE, total);
+    document.getElementById('pag-info').textContent = `Menampilkan ${fmtNum(start)}–${fmtNum(end)} dari ${fmtNum(total)}`;
+
+    let html = `<button class="page-btn" onclick="loadData(${page-1})" ${page<=1?'disabled':''}>‹ Prev</button>`;
+    for (let p = Math.max(1,page-2); p <= Math.min(pages, page+2); p++) {
+      html += `<button class="page-btn ${p===page?'active':''}" onclick="loadData(${p})">${p}</button>`;
+    }
+    html += `<button class="page-btn" onclick="loadData(${page+1})" ${page>=pages?'disabled':''}>Next ›</button>`;
+    document.getElementById('pag-btns').innerHTML = html;
+  }
+
+  // ── MINI MAP ──────────────────────────────────────────
+  let polygonLayer = null;
+
+  function initMiniMap(lat, lng, geojson) {
+    if (miniMap) { miniMap.remove(); miniMap = null; mapMarker = null; polygonLayer = null; }
+    const center = (lat && lng) ? [lat, lng] : [-7.18, 111.88];
+    const zoom   = (lat && lng) ? 15 : 10;
+    miniMap = L.map('mini-map').setView(center, zoom);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      { attribution:'© Esri', maxZoom:19 }).addTo(miniMap);
+
+    // Tampilkan polygon jika ada geojson
+    if (geojson) {
+      polygonLayer = L.geoJSON(geojson, {
+        style: { color:'#FFD700', weight:2.5, fillColor:'#1d6fa4', fillOpacity:0.4 }
+      }).addTo(miniMap);
+      miniMap.fitBounds(polygonLayer.getBounds(), { padding:[10,10] });
+      // Centroid marker
+      const bounds  = polygonLayer.getBounds();
+      const clat    = bounds.getCenter().lat;
+      const clng    = bounds.getCenter().lng;
+      mapMarker = L.circleMarker([clat, clng], {
+        radius:6, color:'#FFD700', weight:2, fillColor:'#fff', fillOpacity:1
+      }).addTo(miniMap).bindTooltip('Centroid polygon', {permanent:false});
+      updateCoord({ lat: clat, lng: clng });
+    } else if (lat && lng) {
+      mapMarker = L.marker([lat, lng], { draggable: true }).addTo(miniMap);
+      mapMarker.on('dragend', e => updateCoord(e.target.getLatLng()));
+      updateCoord({ lat, lng });
+    }
+
+    // Klik peta untuk set/pindah titik centroid manual
+    miniMap.on('click', e => {
+      const {lat, lng} = e.latlng;
+      if (mapMarker) miniMap.removeLayer(mapMarker);
+      mapMarker = L.marker([lat, lng], { draggable: true }).addTo(miniMap);
+      mapMarker.on('dragend', e2 => updateCoord(e2.target.getLatLng()));
+      updateCoord({ lat, lng });
+    });
+  }
+
+  function updateCoord(latlng) {
+    document.getElementById('f-latitude').value  = latlng.lat.toFixed(8);
+    document.getElementById('f-longitude').value = latlng.lng.toFixed(8);
+    document.getElementById('disp-lat').textContent = `Lat: ${latlng.lat.toFixed(6)}`;
+    document.getElementById('disp-lng').textContent = `Lng: ${latlng.lng.toFixed(6)}`;
+  }
+
+  // ── MODAL TAMBAH / EDIT ───────────────────────────────
+  function openModal(mode, id = null) {
+    currentMode = mode;
+    document.getElementById('modal-title').textContent = mode === 'tambah' ? '➕ Tambah Aset Tanah' : '✏ Edit Aset Tanah';
+    document.getElementById('btn-submit-text').textContent = mode === 'tambah' ? 'Simpan' : 'Perbarui';
+    clearForm();
+    document.getElementById('modal-form').classList.add('open');
+
+    // Inisialisasi peta setelah modal terbuka
+    setTimeout(() => {
+      if (mode === 'tambah') {
+        initMiniMap(null, null);
+      } else {
+        loadForEdit(id);
+      }
+    }, 100);
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+    if (miniMap) { miniMap.remove(); miniMap = null; mapMarker = null; }
+  }
+
+  function clearForm() {
+    const fields = ['id','nibar','nomor_register','opd','nama_barang','spesifikasi',
+      'spesifikasi_lainnya','alamat','desa_kelurahan','luas_m2','satuan',
+      'nama_hak','nomor_hak','tanggal_hak','nama_kepemilikan_d','nilai_perolehan',
+      'cara_perolehan','tanggal_perolehan','status_penggunaan','keterangan',
+      'latitude','longitude'];
+    fields.forEach(f => { const el = document.getElementById('f-' + f); if (el) el.value = ''; });
+    document.getElementById('f-satuan').value = 'Meter Persegi';
+    document.getElementById('f-kecamatan-form').value = '';
+    document.getElementById('disp-lat').textContent = 'Lat: —';
+    document.getElementById('disp-lng').textContent = 'Lng: —';
+  }
+
+  async function loadForEdit(id) {
+    try {
+      const res  = await apiFetch(`/api/aset/tanah/${id}`);
+      const data = await res.json();
+      document.getElementById('f-id').value                = data.id_tanah;
+      document.getElementById('f-nibar').value             = data.nibar||'';
+      document.getElementById('f-nomor_register').value    = data.nomor_register||'';
+      document.getElementById('f-opd').value               = data.opd||'';
+      document.getElementById('f-nama_barang').value       = data.nama_barang||'';
+      document.getElementById('f-spesifikasi').value       = data.spesifikasi||'';
+      document.getElementById('f-spesifikasi_lainnya').value = data.spesifikasi_lainnya||'';
+      document.getElementById('f-alamat').value            = data.alamat||'';
+      document.getElementById('f-desa_kelurahan').value    = data.desa_kelurahan||'';
+      document.getElementById('f-kecamatan-form').value   = data.kecamatan||'';
+      document.getElementById('f-luas_m2').value           = data.luas_m2||'';
+      document.getElementById('f-satuan').value            = data.satuan||'Meter Persegi';
+      document.getElementById('f-nama_hak').value          = data.nama_hak||'';
+      document.getElementById('f-nomor_hak').value         = data.nomor_hak||'';
+      document.getElementById('f-tanggal_hak').value       = data.tanggal_hak ? data.tanggal_hak.slice(0,10) : '';
+      document.getElementById('f-nama_kepemilikan_d').value = data.nama_kepemilikan_dokumen||'';
+      document.getElementById('f-nilai_perolehan').value   = data.nilai_perolehan||'';
+      document.getElementById('f-cara_perolehan').value    = data.cara_perolehan||'';
+      document.getElementById('f-tanggal_perolehan').value = data.tanggal_perolehan ? data.tanggal_perolehan.slice(0,10) : '';
+      document.getElementById('f-status_penggunaan').value = data.status_penggunaan||'';
+      document.getElementById('f-keterangan').value        = data.keterangan||'';
+
+      const lat = data.latitude  || null;
+      const lng = data.longitude || null;
+      const geo = data.geometry  || null;
+      initMiniMap(lat, lng, geo);
+      if (lat && lng) {
+        document.getElementById('f-latitude').value  = lat;
+        document.getElementById('f-longitude').value = lng;
+      }
+    } catch(e) { showToast('Gagal memuat data aset.', 'error'); }
+  }
+
+  // ── SUBMIT FORM ───────────────────────────────────────
+  async function submitForm(e) {
+    if (e) e.preventDefault();
+    const btn = document.getElementById('btn-submit');
+    btn.disabled = true;
+
+    const id  = document.getElementById('f-id').value;
+    const lat = document.getElementById('f-latitude').value;
+    const lng = document.getElementById('f-longitude').value;
+
+    const payload = {
+      nibar:                    document.getElementById('f-nibar').value,
+      nomor_register:           document.getElementById('f-nomor_register').value,
+      opd:                      document.getElementById('f-opd').value,
+      nama_barang:              document.getElementById('f-nama_barang').value,
+      spesifikasi:              document.getElementById('f-spesifikasi').value,
+      spesifikasi_lainnya:      document.getElementById('f-spesifikasi_lainnya').value,
+      alamat:                   document.getElementById('f-alamat').value,
+      desa_kelurahan:           document.getElementById('f-desa_kelurahan').value,
+      kecamatan:                document.getElementById('f-kecamatan-form').value,
+      luas_m2:                  document.getElementById('f-luas_m2').value || null,
+      satuan:                   document.getElementById('f-satuan').value,
+      nama_hak:                 document.getElementById('f-nama_hak').value,
+      nomor_hak:                document.getElementById('f-nomor_hak').value,
+      tanggal_hak:              document.getElementById('f-tanggal_hak').value || null,
+      nama_kepemilikan_dokumen: document.getElementById('f-nama_kepemilikan_d').value,
+      nilai_perolehan:          document.getElementById('f-nilai_perolehan').value || null,
+      cara_perolehan:           document.getElementById('f-cara_perolehan').value,
+      tanggal_perolehan:        document.getElementById('f-tanggal_perolehan').value || null,
+      status_penggunaan:        document.getElementById('f-status_penggunaan').value,
+      keterangan:               document.getElementById('f-keterangan').value,
+      latitude:  lat ? parseFloat(lat) : null,
+      longitude: lng ? parseFloat(lng) : null,
+    };
+
+    // Tambah geojson jika ada koordinat
+    if (lat && lng) {
+      payload.geojson = { type:'Point', coordinates:[parseFloat(lng), parseFloat(lat)] };
+    }
+
+    try {
+      const url    = currentMode === 'tambah' ? '/api/aset/tanah' : `/api/aset/tanah/${id}`;
+      const method = currentMode === 'tambah' ? 'POST' : 'PUT';
+      const res    = await apiFetch(url, { method, body: JSON.stringify(payload) });
+      const data   = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal menyimpan.');
+      showToast(currentMode === 'tambah' ? 'Aset berhasil ditambahkan!' : 'Aset berhasil diperbarui!');
+      closeModal('modal-form');
+      loadData(currentPage);
+    } catch(err) {
+      showToast(err.message, 'error');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // ── DETAIL ────────────────────────────────────────────
+  async function openDetail(id) {
+    document.getElementById('modal-detail').classList.add('open');
+    document.getElementById('detail-body').innerHTML = '<div style="text-align:center;padding:24px"><i class="fa fa-spinner fa-spin"></i> Memuat...</div>';
+    try {
+      const res  = await apiFetch(`/api/aset/tanah/${id}`);
+      const d    = await res.json();
+      document.getElementById('detail-body').innerHTML = `
+        <table style="width:100%;font-size:12px;border-collapse:collapse">
+          ${row('NIBAR', d.nibar)} ${row('OPD', d.opd)} ${row('Nama Barang', d.nama_barang)}
+          ${row('Spesifikasi', d.spesifikasi)} ${row('Spesifikasi Lainnya', d.spesifikasi_lainnya)}
+          ${row('Alamat', d.alamat)} ${row('Desa/Kelurahan', d.desa_kelurahan)} ${row('Kecamatan', d.kecamatan)}
+          ${row('Luas', fmtNum(d.luas_m2) + ' m²')} ${row('Satuan', d.satuan)}
+          ${row('Nama Hak', d.nama_hak)} ${row('Nomor Hak', d.nomor_hak)} ${row('Tanggal Hak', fmtDate(d.tanggal_hak))}
+          ${row('Nilai Perolehan', fmtRp(d.nilai_perolehan))} ${row('Cara Perolehan', d.cara_perolehan)}
+          ${row('Tanggal Perolehan', fmtDate(d.tanggal_perolehan))} ${row('Status Penggunaan', d.status_penggunaan)}
+          ${row('Koordinat', d.latitude ? `${d.latitude}, ${d.longitude}` : '—')}
+          ${row('Keterangan', d.keterangan)}
+        </table>`;
+    } catch(e) { document.getElementById('detail-body').innerHTML = 'Gagal memuat detail.'; }
+  }
+
+  function row(label, val) {
+    return `<tr style="border-bottom:1px solid #f3f4f6">
+      <td style="padding:7px 8px;color:var(--muted);font-weight:600;width:40%;vertical-align:top">${label}</td>
+      <td style="padding:7px 8px">${val||'—'}</td>
+    </tr>`;
+  }
+
+  // ── HAPUS ─────────────────────────────────────────────
+  async function hapusAset(id) {
+    if (!confirmDelete()) return;
+    try {
+      const res = await apiFetch(`/api/aset/tanah/${id}`, { method:'DELETE' });
+      if (!res.ok) throw new Error('Gagal menghapus.');
+      showToast('Aset berhasil dihapus.', 'warning');
+      loadData(currentPage);
+    } catch(e) { showToast(e.message, 'error'); }
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <link rel="icon" type="image/png" href="/gambar/Group 23.png"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ekspor Laporan — Admin SIGAB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--navy:#0f2c4a;--navy2:#163659;--blue:#1d6fa4;--gold:#c9a84c;--gold2:#e8c96a;--text:#1a2535;--muted:#6b7280;--border:#e5e7eb;--bg:#f8fafc;--surface:#fff;--success:#16a34a;--danger:#dc2626;--sidebar-w:230px;--header-h:58px}
+    html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--bg)}
+    .admin-layout{display:flex;height:100vh;overflow:hidden}
+    .sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--navy);display:flex;flex-direction:column;overflow-y:auto}
+    .sidebar-brand{padding:18px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px}
+    .sidebar-logo{width:34px;height:34px;background:white;border-radius:8px;overflow:hidden;flex-shrink:0}
+    .sidebar-logo img{width:100%;height:100%;object-fit:contain;padding:3px}
+    .sidebar-title{color:white;font-size:14px;font-weight:800}.sidebar-title span{color:var(--gold2)}
+    .sidebar-sub{color:rgba(255,255,255,0.35);font-size:9px;letter-spacing:.06em;text-transform:uppercase}
+    .sidebar-nav{flex:1;padding:12px 10px}
+    .nav-group{margin-bottom:6px}
+    .nav-group-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);padding:10px 10px 5px}
+    .sidebar-link{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.65);text-decoration:none;transition:all .15s;margin-bottom:1px}
+    .sidebar-link i{width:18px;text-align:center;font-size:13px}
+    .sidebar-link:hover{background:rgba(255,255,255,0.07);color:white}
+    .sidebar-link.active{background:rgba(201,168,76,0.18);color:var(--gold2)}
+    .sidebar-user{padding:14px 16px;border-top:1px solid rgba(255,255,255,0.08)}
+    .sidebar-user-info{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .user-avatar{width:34px;height:34px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--navy);font-size:14px;font-weight:800;flex-shrink:0}
+    .user-name{font-size:12px;font-weight:600;color:white}.user-role{font-size:10px;color:rgba(255,255,255,0.4)}
+    .btn-logout{width:100%;padding:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:rgba(255,255,255,0.5);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:7px}
+    .btn-logout:hover{background:rgba(220,38,38,0.15);color:#fca5a5}
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+    .topbar{height:var(--header-h);background:white;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0}
+    .topbar-left h1{font-size:15px;font-weight:700;color:var(--navy)}.topbar-left p{font-size:11px;color:var(--muted)}
+    .content{flex:1;overflow-y:auto;padding:28px}
+    .ekspor-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:900px}
+    .ekspor-card{background:white;border:1px solid var(--border);border-radius:14px;padding:28px;transition:box-shadow .2s}
+    .ekspor-card:hover{box-shadow:0 6px 24px rgba(0,0,0,0.08)}
+    .ekspor-icon{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:16px}
+    .ekspor-icon.blue{background:#eff6ff}.ekspor-icon.gold{background:#fffbeb}
+    .ekspor-card h3{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:6px}
+    .ekspor-card p{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:20px}
+    .filter-row{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+    .filter-row label{font-size:11px;font-weight:600;color:var(--muted)}
+    .form-control{width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;color:var(--text);background:var(--bg)}
+    .form-control:focus{outline:none;border-color:var(--blue);background:white}
+    .btn-ekspor{width:100%;padding:11px;background:var(--navy);color:white;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+    .btn-ekspor:hover:not(:disabled){background:var(--navy2);transform:translateY(-1px)}
+    .btn-ekspor:disabled{opacity:.6;cursor:not-allowed;transform:none}
+    .btn-ekspor.gold-btn{background:var(--gold);color:var(--navy)}
+    .btn-ekspor.gold-btn:hover:not(:disabled){background:var(--gold2)}
+    .preview-info{margin-top:12px;padding:10px 14px;background:var(--bg);border-radius:8px;font-size:12px;color:var(--muted);border:1px solid var(--border)}
+    .preview-info span{font-weight:700;color:var(--navy)}
+    .divider{height:1px;background:var(--border);margin:20px 0}
+    .info-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:16px 18px;margin-bottom:24px;font-size:12px;color:#1d4ed8;display:flex;gap:10px;align-items:flex-start;max-width:900px}
+    .info-box i{margin-top:1px;flex-shrink:0}
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo"><img src="/gambar/Group 23.png" alt="Logo SIGAB"/></div>
+      <div><div class="sidebar-title"><span>S</span>IGAB</div><div class="sidebar-sub">Panel Admin</div></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group">
+        <div class="nav-group-label">Utama</div>
+        <a href="dashboard.html"     class="sidebar-link"><i class="fa fa-gauge"></i> Dashboard</a>
+        <a href="aset-tanah.html"    class="sidebar-link"><i class="fa fa-map"></i> Aset Tanah (KIB A)</a>
+        <a href="aset-bangunan.html" class="sidebar-link"><i class="fa fa-building"></i> Aset Bangunan (KIB C)</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Pengelolaan</div>
+        <a href="validasi.html" class="sidebar-link"><i class="fa fa-circle-check"></i> Validasi Aset</a>
+        <a href="ekspor.html"   class="sidebar-link active"><i class="fa fa-file-excel"></i> Ekspor Laporan</a>
+      </div>
+      <div class="nav-group" data-admin-only>
+        <div class="nav-group-label">Administrasi</div>
+        <a href="users.html" class="sidebar-link"><i class="fa fa-users"></i> Kelola User</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Publik</div>
+        <a href="/"          class="sidebar-link"><i class="fa fa-house"></i> Beranda</a>
+        <a href="/peta.html" class="sidebar-link"><i class="fa fa-map-location-dot"></i> Peta Publik</a>
+      </div>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-info">
+        <div class="user-avatar" id="user-initial">—</div>
+        <div><div class="user-name" id="admin-name">—</div><div class="user-role" id="admin-role">—</div></div>
+      </div>
+      <button class="btn-logout" onclick="logout()"><i class="fa fa-right-from-bracket"></i> Keluar</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <h1>📥 Ekspor Laporan</h1>
+        <p>Unduh data aset dalam format Excel (.xlsx)</p>
+      </div>
+    </div>
+    <div class="content">
+
+      <div class="info-box">
+        <i class="fa fa-circle-info"></i>
+        <div>File Excel akan diunduh otomatis ke folder Downloads. Gunakan filter kecamatan untuk mengekspor data per wilayah, atau kosongkan untuk ekspor semua data.</div>
+      </div>
+
+      <div class="ekspor-grid">
+
+        <!-- KIB A -->
+        <div class="ekspor-card">
+          <div class="ekspor-icon blue">🗺</div>
+          <h3>KIB A — Aset Tanah</h3>
+          <p>Ekspor seluruh data inventaris tanah pemerintah daerah Kabupaten Bojonegoro beserta atribut lengkapnya.</p>
+          <div class="filter-row">
+            <label>Filter Kecamatan (opsional)</label>
+            <select class="form-control" id="kec-tanah" onchange="previewCount('tanah')">
+              <option value="">Semua Kecamatan</option>
+              <option>BOJONEGORO</option><option>BALEN</option><option>BAURENO</option>
+              <option>BUBULAN</option><option>DANDER</option><option>GAYAM</option>
+              <option>GONDANG</option><option>KALITIDU</option><option>KANOR</option>
+              <option>KAPAS</option><option>KASIMAN</option><option>KEDEWAN</option>
+              <option>KEDUNGADEM</option><option>KEPOHBARU</option><option>MALO</option>
+              <option>MARGOMULYO</option><option>NGAMBON</option><option>NGASEM</option>
+              <option>NGRAHO</option><option>PADANGAN</option><option>PURWOSARI</option>
+              <option>SEKAR</option><option>SUGIHWARAS</option><option>SUKOSEWU</option>
+              <option>TAMBAKREJO</option><option>TEMAYANG</option><option>TRUCUK</option>
+            </select>
+          </div>
+          <div class="preview-info" id="preview-tanah">
+            Jumlah data: <span id="count-tanah">354</span> aset tanah
+          </div>
+          <div class="divider"></div>
+          <button class="btn-ekspor" id="btn-ekspor-tanah" onclick="doEkspor('tanah')">
+            <i class="fa fa-file-excel"></i> Unduh KIB A (.xlsx)
+          </button>
+        </div>
+
+        <!-- KIB C -->
+        <div class="ekspor-card">
+          <div class="ekspor-icon gold">🏗</div>
+          <h3>KIB C — Aset Bangunan</h3>
+          <p>Ekspor seluruh data inventaris bangunan pemerintah daerah Kabupaten Bojonegoro beserta link foto/denah.</p>
+          <div class="filter-row">
+            <label>Filter Kecamatan (opsional)</label>
+            <select class="form-control" id="kec-bangunan" onchange="previewCount('bangunan')">
+              <option value="">Semua Kecamatan</option>
+              <option>BOJONEGORO</option><option>BALEN</option><option>BAURENO</option>
+              <option>BUBULAN</option><option>DANDER</option><option>GAYAM</option>
+              <option>GONDANG</option><option>KALITIDU</option><option>KANOR</option>
+              <option>KAPAS</option><option>KASIMAN</option><option>KEDEWAN</option>
+              <option>KEDUNGADEM</option><option>KEPOHBARU</option><option>MALO</option>
+              <option>MARGOMULYO</option><option>NGAMBON</option><option>NGASEM</option>
+              <option>NGRAHO</option><option>PADANGAN</option><option>PURWOSARI</option>
+              <option>SEKAR</option><option>SUGIHWARAS</option><option>SUKOSEWU</option>
+              <option>TAMBAKREJO</option><option>TEMAYANG</option><option>TRUCUK</option>
+            </select>
+          </div>
+          <div class="preview-info" id="preview-bangunan">
+            Jumlah data: <span id="count-bangunan">677</span> aset bangunan
+          </div>
+          <div class="divider"></div>
+          <button class="btn-ekspor gold-btn" id="btn-ekspor-bangunan" onclick="doEkspor('bangunan')">
+            <i class="fa fa-file-excel"></i> Unduh KIB C (.xlsx)
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/admin/js/admin.js"></script>
+<script>
+  (async function init() {
+    const user = await requireLogin();
+    if (!user) return;
+    renderUserInfo();
+    setActiveNav();
+    document.getElementById('user-initial').textContent = (user.nama_lengkap||'A')[0].toUpperCase();
+    previewCount('tanah');
+    previewCount('bangunan');
+  })();
+
+  async function previewCount(type) {
+    const kec = document.getElementById(`kec-${type}`).value;
+    const url = type === 'tanah'
+      ? `/api/aset/tanah?limit=1&page=1${kec ? '&kecamatan='+kec : ''}`
+      : `/api/aset/bangunan-kib?limit=1&page=1${kec ? '&kecamatan='+kec : ''}`;
+    try {
+      const res  = await apiFetch(url);
+      const data = await res.json();
+      document.getElementById(`count-${type}`).textContent = fmtNum(data.total);
+    } catch(e) {}
+  }
+
+  async function doEkspor(type) {
+    const kec    = document.getElementById(`kec-${type}`).value;
+    const btn    = document.getElementById(`btn-ekspor-${type}`);
+    const url    = `/api/laporan/${type}${kec ? '?kecamatan='+encodeURIComponent(kec) : ''}`;
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa fa-spinner fa-spin"></i> Memproses...`;
+    try {
+      const token = getToken();
+      const res   = await fetch(url, { headers:{ Authorization:'Bearer '+token } });
+      if (!res.ok) throw new Error('Gagal mengunduh.');
+      const blob     = await res.blob();
+      const filename = res.headers.get('Content-Disposition')?.match(/filename=(.+)/)?.[1]
+        || `KIB_${type==='tanah'?'A_Tanah':'C_Bangunan'}_${new Date().toISOString().slice(0,10)}.xlsx`;
+      const a = document.createElement('a');
+      a.href  = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      showToast(`File ${filename} berhasil diunduh!`);
+    } catch(e) {
+      showToast('Gagal mengunduh file. Coba lagi.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = type === 'tanah'
+        ? '<i class="fa fa-file-excel"></i> Unduh KIB A (.xlsx)'
+        : '<i class="fa fa-file-excel"></i> Unduh KIB C (.xlsx)';
+    }
+  }
+</script>
+</body>
+</html>

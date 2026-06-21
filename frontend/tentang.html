@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <link rel="icon" type="image/png" href="/gambar/Group 23.png"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tentang SIGAB — WebGIS BPKAD Bojonegoro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:   #0f2c4a;
+      --navy2:  #163659;
+      --blue:   #1d6fa4;
+      --gold:   #c9a84c;
+      --gold2:  #e8c96a;
+      --gold3:  #f5e199;
+      --white:  #ffffff;
+      --off:    #f7f8fa;
+      --text:   #1a2535;
+      --muted:  #5a6a7e;
+      --border: #dce3ec;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text);
+      background: var(--white);
+      overflow-x: hidden;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+      height: 58px;
+      background: var(--navy);
+      border-bottom: 2px solid var(--gold);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px;
+    }
+    .nav-left { display: flex; align-items: center; gap: 12px; }
+    .nav-logo { width: 36px; height: 36px; border-radius: 7px; background: white; overflow: hidden; flex-shrink: 0; }
+    .nav-logo img { width: 100%; height: 100%; object-fit: contain; padding: 3px; }
+    .nav-brand { color: white; font-size: 14px; font-weight: 700; letter-spacing: 0.01em; }
+    .nav-brand span { color: var(--gold2); }
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+    .nav-link {
+      color: rgba(255,255,255,0.75); font-size: 13px; font-weight: 500;
+      text-decoration: none; padding: 6px 14px; border-radius: 7px;
+      transition: all .2s;
+    }
+    .nav-link:hover { color: white; background: rgba(255,255,255,0.08); }
+    .nav-cta {
+      background: var(--gold); color: var(--navy);
+      font-size: 13px; font-weight: 700; padding: 7px 18px;
+      border-radius: 8px; text-decoration: none; transition: all .2s;
+    }
+    .nav-cta:hover { background: var(--gold2); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      background: var(--navy);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 100px 40px 80px;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 100%, rgba(29,111,164,0.25) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 30% at 80% 20%, rgba(201,168,76,0.12) 0%, transparent 60%);
+    }
+    /* Grid garis halus */
+    .hero::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+    .hero-inner { position: relative; z-index: 1; max-width: 780px; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.35);
+      color: var(--gold2); font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 6px 16px; border-radius: 100px;
+      margin-bottom: 28px;
+    }
+    .hero-badge::before { content: '◆'; font-size: 8px; }
+    .hero-sigab {
+      font-size: clamp(64px, 10vw, 100px);
+      font-weight: 800; color: var(--white);
+      letter-spacing: -0.02em; line-height: 1;
+      margin-bottom: 16px;
+    }
+    .hero-sigab span { color: var(--gold2); }
+    .hero-kepanjangan {
+      font-size: clamp(13px, 1.8vw, 16px);
+      color: rgba(255,255,255,0.5); font-weight: 500;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero-tagline {
+      font-size: clamp(16px, 2.2vw, 20px);
+      color: rgba(255,255,255,0.85); font-weight: 400;
+      line-height: 1.65; max-width: 580px; margin: 0 auto 44px;
+    }
+    .hero-tagline em { color: var(--gold2); font-style: normal; font-weight: 600; }
+    .hero-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn-hero-primary {
+      background: var(--gold); color: var(--navy);
+      font-size: 14px; font-weight: 700; padding: 13px 28px;
+      border-radius: 10px; text-decoration: none; transition: all .2s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .btn-hero-primary:hover { background: var(--gold2); transform: translateY(-1px); }
+    .btn-hero-outline {
+      background: rgba(255,255,255,0.08); color: white;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      font-size: 14px; font-weight: 600; padding: 13px 28px;
+      border-radius: 10px; text-decoration: none; transition: all .2s;
+    }
+    .btn-hero-outline:hover { background: rgba(255,255,255,0.14); }
+
+    /* Scroll indicator */
+    .scroll-hint {
+      position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+      z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
+      color: rgba(255,255,255,0.35); font-size: 10px; letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .scroll-arrow {
+      width: 20px; height: 20px; border-right: 2px solid rgba(255,255,255,0.3);
+      border-bottom: 2px solid rgba(255,255,255,0.3);
+      transform: rotate(45deg);
+      animation: scrollBounce 1.8s ease-in-out infinite;
+    }
+    @keyframes scrollBounce { 0%,100%{transform:rotate(45deg) translateY(0)} 50%{transform:rotate(45deg) translateY(5px)} }
+
+    /* ── SECTION UMUM ── */
+    section { position: relative; }
+
+    /* ── SECTION ASET ── */
+    .sec-aset {
+      background: var(--navy);
+      display: grid; grid-template-columns: 1fr 1fr;
+      min-height: 480px;
+    }
+    .sec-aset-img {
+      position: relative; overflow: hidden;
+    }
+    .sec-aset-img img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      filter: brightness(0.85);
+    }
+    /* Jika tidak ada gambar, pakai gradient placeholder */
+    .img-placeholder-aset {
+      width: 100%; height: 100%; min-height: 380px;
+      background: linear-gradient(135deg, #1a3a1a 0%, #0d4a2a 40%, #0a3d5c 100%);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .img-placeholder-aset .placeholder-icon { font-size: 80px; opacity: 0.4; }
+    .sec-aset-text {
+      padding: 70px 60px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .sec-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; margin-bottom: 14px;
+    }
+    .sec-label.gold { color: var(--gold); }
+    .sec-label.blue { color: var(--blue); }
+    .sec-heading {
+      font-size: clamp(26px, 3vw, 36px);
+      font-weight: 800; line-height: 1.15; margin-bottom: 20px;
+    }
+    .sec-heading em { font-style: italic; font-weight: 400; }
+    .sec-heading.light { color: white; }
+    .sec-heading.dark  { color: var(--text); }
+    .sec-body {
+      font-size: 15px; line-height: 1.8; text-align: justify;
+    }
+    .sec-body.light { color: rgba(255,255,255,0.8); }
+    .sec-body.dark  { color: var(--muted); }
+    .sec-body strong { font-weight: 700; }
+    .sec-body.light strong { color: white; }
+    .sec-body.dark  strong { color: var(--text); }
+
+    /* ── SECTION GEOSPATIAL ── */
+    .sec-geo {
+      background: var(--navy2);
+      display: grid; grid-template-columns: 1fr 1fr;
+      min-height: 480px;
+    }
+    .sec-geo-text {
+      padding: 70px 60px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .sec-geo-img { position: relative; overflow: hidden; }
+    .img-placeholder-geo {
+      width: 100%; height: 100%; min-height: 380px;
+      background: linear-gradient(135deg, #0a2540 0%, #0d3d5c 50%, #0a2a3d 100%);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .img-placeholder-geo .placeholder-icon { font-size: 80px; opacity: 0.4; }
+
+    /* ── SECTION INFORMASI ── */
+    .sec-info {
+      background: var(--navy);
+      display: grid; grid-template-columns: 1fr 1fr;
+      min-height: 480px;
+    }
+    .sec-info-img { position: relative; overflow: hidden; }
+    .img-placeholder-info {
+      width: 100%; height: 100%; min-height: 380px;
+      background: linear-gradient(135deg, #1a1a3a 0%, #2a1a4a 50%, #0f2c4a 100%);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sec-info-text {
+      padding: 70px 60px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+
+    /* ── SECTION SISTEM ── */
+    .sec-sistem {
+      background: var(--navy2);
+      display: grid; grid-template-columns: 1fr 1fr;
+      min-height: 480px;
+    }
+    .sec-sistem-text {
+      padding: 70px 60px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .sec-sistem-img { position: relative; overflow: hidden; }
+    .img-placeholder-sistem {
+      width: 100%; height: 100%; min-height: 380px;
+      background: linear-gradient(135deg, #0a2030 0%, #1a3a5a 50%, #0d2a3d 100%);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Divider antar section */
+    .wave-divider {
+      height: 6px;
+      background: linear-gradient(90deg, var(--navy) 0%, var(--gold) 50%, var(--navy2) 100%);
+      opacity: 0.6;
+    }
+
+    /* ── FUNGSI SIGAB ── */
+    .sec-fungsi {
+      background: var(--off);
+      padding: 90px 40px;
+    }
+    .fungsi-inner { max-width: 900px; margin: 0 auto; }
+    .fungsi-tag {
+      display: inline-block; background: var(--gold);
+      color: var(--navy); font-size: 10px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 5px 14px; border-radius: 100px; margin-bottom: 20px;
+    }
+    .fungsi-title {
+      font-size: clamp(28px, 3.5vw, 40px); font-weight: 800;
+      color: var(--navy); margin-bottom: 10px; line-height: 1.15;
+    }
+    .fungsi-sub {
+      font-size: 15px; color: var(--muted); margin-bottom: 50px; line-height: 1.6;
+    }
+    .fungsi-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .fungsi-card {
+      background: white; border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 28px 28px 28px 24px;
+      display: flex; gap: 18px; align-items: flex-start;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .fungsi-card:hover { box-shadow: 0 8px 32px rgba(15,44,74,0.1); transform: translateY(-2px); }
+    .fungsi-num {
+      width: 40px; height: 40px; background: var(--navy);
+      color: var(--gold2); border-radius: 10px;
+      font-size: 16px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .fungsi-card-body h4 {
+      font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 6px;
+    }
+    .fungsi-card-body p {
+      font-size: 13px; color: var(--muted); line-height: 1.65;
+    }
+
+    /* Statistik kecil */
+    .stats-strip {
+      background: var(--navy);
+      padding: 40px;
+      display: flex; justify-content: center; gap: 0;
+    }
+    .stat-item {
+      text-align: center; padding: 0 40px;
+      border-right: 1px solid rgba(255,255,255,0.1);
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num { font-size: clamp(28px, 4vw, 40px); font-weight: 800; color: var(--gold2); line-height: 1; margin-bottom: 4px; }
+    .stat-lbl { font-size: 11px; color: rgba(255,255,255,0.5); letter-spacing: 0.06em; text-transform: uppercase; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--navy);
+      border-top: 2px solid var(--gold);
+      padding: 40px 60px 28px;
+    }
+    .footer-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 24px; flex-wrap: wrap;
+    }
+    .footer-left { display: flex; align-items: center; gap: 14px; }
+    .footer-logo { width: 42px; height: 42px; background: white; border-radius: 8px; overflow: hidden; }
+    .footer-logo img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
+    .footer-brand { color: white; }
+    .footer-brand strong { display: block; font-size: 14px; font-weight: 700; }
+    .footer-brand span { font-size: 11px; color: rgba(255,255,255,0.45); }
+    .footer-right { text-align: right; }
+    .footer-sigab { color: var(--gold2); font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+    .footer-tagline { font-size: 11px; color: rgba(255,255,255,0.4); }
+    .footer-copy {
+      max-width: 1100px; margin: 28px auto 0;
+      padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08);
+      font-size: 11px; color: rgba(255,255,255,0.35);
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+    }
+
+    /* ── REVEAL ANIMASI ── */
+    .reveal {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 860px) {
+      .sec-aset, .sec-geo, .sec-info, .sec-sistem { grid-template-columns: 1fr; }
+      .sec-aset-img, .sec-geo-img, .sec-info-img, .sec-sistem-img { min-height: 220px; }
+      .sec-aset-text, .sec-geo-text, .sec-info-text, .sec-sistem-text { padding: 48px 32px; }
+      /* urutan: teks dulu, gambar belakang di mobile */
+      .sec-geo .sec-geo-text  { order: 1; }
+      .sec-geo .sec-geo-img   { order: 2; }
+      .sec-sistem .sec-sistem-text { order: 1; }
+      .sec-sistem .sec-sistem-img  { order: 2; }
+      .fungsi-grid { grid-template-columns: 1fr; }
+      .stats-strip { flex-wrap: wrap; gap: 24px; }
+      .stat-item { border-right: none; }
+      nav { padding: 0 20px; }
+      footer { padding: 32px 24px 20px; }
+      .footer-copy { flex-direction: column; text-align: center; }
+    }
+
+    /* ── FLOATING SIDEBAR ── */
+    .floating-side {
+      position: fixed; right: 0; top: 50%; transform: translateY(-50%);
+      z-index: 990; display: flex; flex-direction: column; gap: 0;
+    }
+    .float-btn {
+      width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; cursor: pointer; text-decoration: none;
+      transition: all .2s; position: relative; border: none; font-family: inherit;
+    }
+    .float-btn:first-child { border-radius: 10px 0 0 0; }
+    .float-btn.fb  { background: #1877f2; color: white; }
+    .float-btn.ig  { background: linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045); color: white; }
+    .float-btn.yt  { background: #ff0000; color: white; }
+    .float-btn.mail { background: #ea4335; color: white; }
+    .float-btn.feedback-btn { background: #c49a2a; color: #0d2137; font-size: 14px; font-weight: 700; height: 48px; border-radius: 0 0 0 10px; }
+    .float-btn:hover { transform: translateX(-4px); box-shadow: -3px 0 12px rgba(0,0,0,0.2); z-index: 1; }
+    .float-btn .ftip {
+      position: absolute; right: 50px; top: 50%; transform: translateY(-50%);
+      background: rgba(15,44,74,0.9); color: white; padding: 4px 10px;
+      border-radius: 6px; font-size: 11px; font-weight: 600;
+      white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .15s;
+    }
+    .float-btn:hover .ftip { opacity: 1; }
+    .float-divider { width: 44px; height: 1px; background: rgba(255,255,255,0.2); }
+    .scroll-top {
+      position: fixed; right: 16px; bottom: 24px; z-index: 990;
+      width: 42px; height: 42px; background: #0f2c4a; color: white;
+      border: none; border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+      opacity: 0; pointer-events: none; transition: all .3s;
+    }
+    .scroll-top.show { opacity: 1; pointer-events: all; }
+    .scroll-top:hover { transform: translateY(-2px); }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav>
+    <div class="nav-left">
+      <div class="nav-logo">
+        <img src="/gambar/Group 23.png" alt="Logo SIGAB"/>
+      </div>
+      <div class="nav-brand"><span>SIGAB</span> — WebGIS BPKAD Bojonegoro</div>
+    </div>
+    <div class="nav-right">
+      <a href="/" class="nav-link">Beranda</a>
+      <a href="/tentang.html" class="nav-link" style="color:var(--gold2)">Tentang</a>
+      <a href="/peta.html" class="nav-cta">Buka Peta →</a>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-badge">Sistem Informasi Geospasial</div>
+      <h1 class="hero-sigab">
+        <span>S</span>IGAB
+      </h1>
+      <p class="hero-kepanjangan">Sistem Informasi Geospasial Aset Bojonegoro</p>
+      <p class="hero-tagline">
+        Platform digital inventarisasi dan visualisasi <em>aset tanah &amp; bangunan</em>
+        Pemerintah Kabupaten Bojonegoro berbasis peta interaktif dan basis data spasial.
+      </p>
+      <div class="hero-btns">
+        <a href="/peta.html" class="btn-hero-primary">🗺 Buka Peta Interaktif</a>
+        <a href="/" class="btn-hero-outline">← Kembali ke Beranda</a>
+      </div>
+    </div>
+    <div class="scroll-hint">
+      <span>Scroll</span>
+      <div class="scroll-arrow"></div>
+    </div>
+  </section>
+
+  <!-- ── ASET ── -->
+  <section class="sec-aset">
+    <div class="sec-aset-img">
+      <div class="img-placeholder-aset">
+        <span class="placeholder-icon">🏛</span>
+      </div>
+    </div>
+    <div class="sec-aset-text reveal">
+      <div class="sec-label gold">A — Aset</div>
+      <h2 class="sec-heading light"><em>Aset</em><br/>(Asset Management)</h2>
+      <p class="sec-body light">
+        Mencerminkan fokus utama SIGAB sebagai sistem pengelolaan <strong>aset milik Pemerintah Daerah Kabupaten Bojonegoro</strong> secara digital dan terpadu. Seluruh data dalam sistem ini bersumber dari Kartu Inventaris Barang (KIB) yang dikelola oleh Badan Pengelolaan Keuangan dan Aset Daerah (BPKAD), mencakup KIB A untuk aset tanah dan KIB C untuk aset bangunan gedung. Pengelolaan aset berbasis sistem informasi memungkinkan proses pencatatan, pemutakhiran, dan pengawasan aset daerah dilakukan secara akurat, transparan, dan berkelanjutan — mendukung tata kelola pemerintahan yang baik dan akuntabel sesuai prinsip <strong>Standar Akuntansi Pemerintahan (SAP).</strong>
+      </p>
+    </div>
+  </section>
+
+  <div class="wave-divider"></div>
+
+  <!-- ── GEOSPATIAL ── -->
+  <section class="sec-geo">
+    <div class="sec-geo-text reveal">
+      <div class="sec-label gold">G — Geospatial</div>
+      <h2 class="sec-heading light"><em>Geospatial</em><br/>(Keruangan)</h2>
+      <p class="sec-body light">
+        Menjadi landasan utama SIGAB dalam memahami persebaran dan posisi aset daerah secara keruangan. Pendekatan geospasial memungkinkan setiap aset tanah dan bangunan direpresentasikan dalam bentuk <strong>titik koordinat dan poligon</strong> yang akurat di atas peta, sehingga lokasi, batas, dan hubungan antar aset dapat dipahami secara visual. Teknologi PostGIS dan LeafletJS dimanfaatkan untuk menyimpan dan menampilkan data geometri secara efisien. Dengan pendekatan ini, setiap aset tidak hanya memiliki atribut administratif, tetapi juga <strong>identitas lokasi yang terverifikasi</strong> melalui proses digitasi menggunakan QGIS dan ArcGIS Pro.
+      </p>
+    </div>
+    <div class="sec-geo-img">
+      <div class="img-placeholder-geo">
+        <span class="placeholder-icon">🌐</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="wave-divider"></div>
+
+  <!-- ── INFORMASI ── -->
+  <section class="sec-info">
+    <div class="sec-info-img">
+      <div class="img-placeholder-info">
+        <span class="placeholder-icon">📊</span>
+      </div>
+    </div>
+    <div class="sec-info-text reveal">
+      <div class="sec-label gold">A — Aset (Informasi)</div>
+      <h2 class="sec-heading light"><em>Informasi</em><br/>(Data &amp; Laporan)</h2>
+      <p class="sec-body light">
+        Menggambarkan transformasi data inventaris menjadi informasi yang <strong>mudah diakses, dipahami, dan dimanfaatkan</strong> oleh perangkat daerah dan pemangku kepentingan. SIGAB tidak sekadar menyimpan data — sistem ini menyajikan informasi aset dalam bentuk peta interaktif, popup detail, statistik real-time, serta fitur ekspor laporan Excel yang dapat digunakan untuk kebutuhan pelaporan dan pengambilan keputusan. Prinsip <strong>keterbukaan dan akurasi informasi</strong> diterapkan melalui validasi data koordinat, pencocokan NIBAR, serta penyertaan foto dan denah aset secara langsung dalam sistem.
+      </p>
+    </div>
+  </section>
+
+  <div class="wave-divider"></div>
+
+  <!-- ── SISTEM ── -->
+  <section class="sec-sistem">
+    <div class="sec-sistem-text reveal">
+      <div class="sec-label gold">B — Bojonegoro (Sistem)</div>
+      <h2 class="sec-heading light"><em>System</em><br/>(Sistem Digital)</h2>
+      <p class="sec-body light">
+        Menandakan integrasi yang harmonis antara teknologi, data, dan kebijakan dalam satu platform digital yang terkelola secara terpadu. SIGAB dibangun menggunakan <strong>metode pengembangan Waterfall</strong> dengan tahapan analisis kebutuhan, perancangan, implementasi, dan pengujian. Arsitektur sistem terdiri dari backend Node.js + Express, basis data spasial PostgreSQL + PostGIS, serta antarmuka peta berbasis LeafletJS. Sistem yang terstruktur ini memungkinkan proses pengelolaan, pembaruan, dan penyajian data aset dilakukan secara efisien, transparan, dan berkelanjutan — <strong>mendukung tata kelola aset daerah Kabupaten Bojonegoro</strong> di era transformasi digital.
+      </p>
+    </div>
+    <div class="sec-sistem-img">
+      <div class="img-placeholder-sistem">
+        <span class="placeholder-icon">⚙️</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATISTIK STRIP -->
+  <div class="stats-strip">
+    <div class="stat-item">
+      <div class="stat-num" id="t-tanah">354</div>
+      <div class="stat-lbl">Bidang Tanah (KIB A)</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="t-bangunan">677</div>
+      <div class="stat-lbl">Aset Bangunan (KIB C)</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">644,83</div>
+      <div class="stat-lbl">Hektar Total Luas</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">28</div>
+      <div class="stat-lbl">Kecamatan</div>
+    </div>
+  </div>
+
+  <!-- ── FUNGSI SIGAB ── -->
+  <section class="sec-fungsi">
+    <div class="fungsi-inner">
+      <div class="reveal">
+        <div class="fungsi-tag">Fungsi Sistem</div>
+        <h2 class="fungsi-title">Fungsi SIGAB</h2>
+        <p class="fungsi-sub">
+          SIGAB dirancang untuk mendukung pengelolaan aset daerah Kabupaten Bojonegoro
+          secara modern, akurat, dan mudah diakses oleh seluruh perangkat daerah.
+        </p>
+      </div>
+      <div class="fungsi-grid reveal">
+        <div class="fungsi-card">
+          <div class="fungsi-num">1</div>
+          <div class="fungsi-card-body">
+            <h4>Portal Inventarisasi Aset Terpadu</h4>
+            <p>Menyediakan platform terpusat untuk mencatat, menyimpan, dan memutakhirkan data Kartu Inventaris Barang (KIB A dan KIB C) seluruh OPD di lingkungan Pemerintah Kabupaten Bojonegoro.</p>
+          </div>
+        </div>
+        <div class="fungsi-card">
+          <div class="fungsi-num">2</div>
+          <div class="fungsi-card-body">
+            <h4>Peta Interaktif Berbasis Web</h4>
+            <p>Menampilkan persebaran aset tanah dan bangunan dalam bentuk peta interaktif dengan basemap satelit, filter per kecamatan/OPD, dan popup informasi detail setiap aset.</p>
+          </div>
+        </div>
+        <div class="fungsi-card">
+          <div class="fungsi-num">3</div>
+          <div class="fungsi-card-body">
+            <h4>Informasi Aset Real-Time</h4>
+            <p>Menyajikan statistik jumlah aset, total luas tanah, dan sebaran per kecamatan secara otomatis dan diperbarui langsung dari basis data spasial PostGIS.</p>
+          </div>
+        </div>
+        <div class="fungsi-card">
+          <div class="fungsi-num">4</div>
+          <div class="fungsi-card-body">
+            <h4>Ekspor Laporan Excel</h4>
+            <p>Memfasilitasi pengunduhan data KIB A dan KIB C dalam format Excel (.xlsx) yang terstruktur, siap digunakan untuk kebutuhan pelaporan, verifikasi, dan audit aset daerah.</p>
+          </div>
+        </div>
+        <div class="fungsi-card">
+          <div class="fungsi-num">5</div>
+          <div class="fungsi-card-body">
+            <h4>Pencarian &amp; Filter Aset</h4>
+            <p>Dilengkapi fitur pencarian berdasarkan kecamatan, desa, NIBAR, dan OPD pengelola — memudahkan identifikasi dan verifikasi aset secara cepat dan tepat.</p>
+          </div>
+        </div>
+        <div class="fungsi-card">
+          <div class="fungsi-num">6</div>
+          <div class="fungsi-card-body">
+            <h4>Dokumentasi Foto &amp; Denah Aset</h4>
+            <p>Mengintegrasikan tautan foto dan denah bangunan langsung dalam sistem, sehingga setiap aset dapat diverifikasi secara visual tanpa perlu kunjungan lapangan berulang.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-left">
+        <div class="footer-logo">
+          <img src="/gambar/Group 23.png" alt="Logo SIGAB"/>
+        </div>
+        <div class="footer-brand">
+          <strong>BPKAD Kabupaten Bojonegoro</strong>
+          <span>Badan Pengelolaan Keuangan dan Aset Daerah</span>
+        </div>
+      </div>
+      <div class="footer-right">
+        <div class="footer-sigab">SIGAB — Sistem Informasi Geospasial Aset Bojonegoro</div>
+        <div class="footer-tagline">Dikembangkan oleh Rafi Naufal Saputra · Teknik Geomatika ITS · 2026</div>
+      </div>
+    </div>
+    <div class="footer-copy">
+      <span>© 2026 BPKAD Kabupaten Bojonegoro. Hak Cipta Dilindungi.</span>
+      <span>Tugas Akhir · NRP 5016221125 · Teknik Geomatika ITS</span>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll reveal
+    const revealEls = document.querySelectorAll('.reveal');
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    revealEls.forEach(el => obs.observe(el));
+  </script>
+
+  <!-- FLOATING SIDEBAR KANAN -->
+  <div class="floating-side">
+    <a href="https://www.facebook.com/profile.php?id=100079308837855" target="_blank" rel="noopener noreferrer" class="float-btn fb">
+      <i class="fa-brands fa-facebook-f"></i><span class="ftip">Facebook</span>
+    </a>
+    <div class="float-divider"></div>
+    <a href="https://www.instagram.com/bpkadbojonegoro" target="_blank" rel="noopener noreferrer" class="float-btn ig">
+      <i class="fa-brands fa-instagram"></i><span class="ftip">Instagram</span>
+    </a>
+    <div class="float-divider"></div>
+    <a href="https://www.youtube.com/@bpkadbojonegoro4460" target="_blank" rel="noopener noreferrer" class="float-btn yt">
+      <i class="fa-brands fa-youtube"></i><span class="ftip">YouTube</span>
+    </a>
+    <div class="float-divider"></div>
+    <a href="https://mail.google.com/mail/u/1/?fs=1&to=bpkadbojonegoro@gmail.com&tf=cm" target="_blank" rel="noopener noreferrer" class="float-btn mail">
+      <i class="fa fa-envelope"></i><span class="ftip">Email Kami</span>
+    </a>
+    <div class="float-divider"></div>
+    <a href="/feedback.html" class="float-btn feedback-btn">
+      <i class="fa fa-star"></i><span class="ftip">Beri Feedback</span>
+    </a>
+  </div>
+  <button class="scroll-top" id="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+    <i class="fa fa-chevron-up"></i>
+  </button>
+  <script>
+    window.addEventListener('scroll', () => {
+      document.getElementById('scroll-top').classList.toggle('show', window.scrollY > 300);
+    });
+  </script>
+
+
+  <script>
+    // Load statistik real-time dari API
+    async function loadStatsTentang() {
+      try {
+        const res  = await fetch('/api/statistik');
+        const data = await res.json();
+        const t = Number(data.total_tanah).toLocaleString('id-ID');
+        const b = Number(data.total_bangunan).toLocaleString('id-ID');
+        const ha = (data.total_luas_tanah / 10000).toFixed(2);
+        ['t-tanah','t-tanah2'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = t;
+        });
+        ['t-bangunan','t-bangunan2'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = b;
+        });
+      } catch(e) { /* fallback ke nilai hardcoded */ }
+    }
+    loadStatsTentang();
+  </script>
+
+</body>
+</html>

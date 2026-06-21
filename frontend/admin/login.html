@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <link rel="icon" type="image/png" href="/gambar/Group 23.png"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login Admin — SIGAB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:  #0f2c4a; --navy2: #163659;
+      --blue:  #1d6fa4; --gold:  #c9a84c; --gold2: #e8c96a;
+      --text:  #1a2535; --muted: #6b7280; --border: #e5e7eb;
+      --error: #dc2626; --success: #16a34a;
+    }
+    html, body { height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    body {
+      min-height: 100vh;
+      background: var(--navy);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      position: relative; overflow: hidden;
+    }
+
+    /* Grid latar */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
+    }
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 110%, rgba(29,111,164,0.3) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Card login */
+    .login-card {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 420px;
+      background: white; border-radius: 20px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+      overflow: hidden;
+      animation: slideUp .4s ease both;
+    }
+    @keyframes slideUp {
+      from { opacity:0; transform: translateY(24px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+
+    /* Header card */
+    .card-header {
+      background: var(--navy);
+      padding: 32px 36px 28px;
+      text-align: center;
+      border-bottom: 3px solid var(--gold);
+    }
+    .card-logo {
+      width: 52px; height: 52px; background: white;
+      border-radius: 12px; margin: 0 auto 16px;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .card-logo img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
+    .card-sigab {
+      font-size: 26px; font-weight: 800; color: white;
+      letter-spacing: -0.01em; margin-bottom: 4px;
+    }
+    .card-sigab span { color: var(--gold2); }
+    .card-sub {
+      font-size: 11px; color: rgba(255,255,255,0.45);
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+
+    /* Body form */
+    .card-body { padding: 32px 36px 36px; }
+
+    .form-title {
+      font-size: 16px; font-weight: 700; color: var(--text);
+      margin-bottom: 6px;
+    }
+    .form-sub {
+      font-size: 12px; color: var(--muted); margin-bottom: 28px; line-height: 1.5;
+    }
+
+    .field { margin-bottom: 18px; }
+    .field label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: var(--text); margin-bottom: 6px;
+    }
+    .input-wrap { position: relative; }
+    .input-wrap .icon {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      font-size: 15px; color: var(--muted); pointer-events: none;
+    }
+    .field input {
+      width: 100%; padding: 11px 12px 11px 38px;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      font-size: 13px; font-family: inherit; color: var(--text);
+      background: #f9fafb; transition: all .15s;
+    }
+    .field input:focus {
+      outline: none; border-color: var(--blue);
+      background: white; box-shadow: 0 0 0 3px rgba(29,111,164,0.1);
+    }
+    .field input.error { border-color: var(--error); }
+
+    /* Toggle password */
+    .toggle-pw {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      font-size: 15px; color: var(--muted); padding: 0; line-height: 1;
+    }
+    .toggle-pw:hover { color: var(--blue); }
+
+    /* Alert error */
+    .alert {
+      padding: 11px 14px; border-radius: 9px; font-size: 12px;
+      margin-bottom: 18px; display: none; align-items: center; gap: 8px;
+      font-weight: 500;
+    }
+    .alert.error   { background: #fef2f2; border: 1px solid #fecaca; color: var(--error); display: flex; }
+    .alert.success { background: #f0fdf4; border: 1px solid #bbf7d0; color: var(--success); display: flex; }
+
+    /* Tombol submit */
+    .btn-login {
+      width: 100%; padding: 13px;
+      background: var(--navy); color: white;
+      border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 700; font-family: inherit;
+      cursor: pointer; transition: all .18s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 8px;
+    }
+    .btn-login:hover:not(:disabled) { background: var(--navy2); transform: translateY(-1px); }
+    .btn-login:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .btn-login .spinner {
+      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white; border-radius: 50%;
+      animation: spin .7s linear infinite; display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-login.loading .spinner { display: block; }
+    .btn-login.loading .btn-text { display: none; }
+
+    /* Footer card */
+    .card-footer {
+      padding: 14px 36px 20px; text-align: center;
+      border-top: 1px solid var(--border);
+    }
+    .card-footer a {
+      font-size: 12px; color: var(--muted); text-decoration: none;
+      transition: color .15s;
+    }
+    .card-footer a:hover { color: var(--blue); }
+
+    /* Copyright */
+    .copy {
+      position: fixed; bottom: 16px; left: 0; right: 0;
+      text-align: center; font-size: 11px;
+      color: rgba(255,255,255,0.2); z-index: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-card">
+    <!-- Header -->
+    <div class="card-header">
+      <div class="card-logo">
+        <img src="/gambar/Group 23.png" alt="Logo SIGAB"/>
+      </div>
+      <div class="card-sigab"><span>S</span>IGAB</div>
+      <div class="card-sub">Panel Administrasi · BPKAD Bojonegoro</div>
+    </div>
+
+    <!-- Form -->
+    <div class="card-body">
+      <div class="form-title">Masuk ke Panel Admin</div>
+      <div class="form-sub">Hanya untuk staf BPKAD yang berwenang. Gunakan akun yang telah diberikan oleh administrator.</div>
+
+      <div class="alert" id="alert-box">
+        <span id="alert-icon">⚠</span>
+        <span id="alert-msg"></span>
+      </div>
+
+      <form id="login-form" onsubmit="doLogin(event)">
+        <div class="field">
+          <label for="username">Username</label>
+          <div class="input-wrap">
+            <span class="icon">👤</span>
+            <input type="text" id="username" name="username"
+              placeholder="Masukkan username..." autocomplete="username" required/>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="input-wrap">
+            <span class="icon">🔒</span>
+            <input type="password" id="password" name="password"
+              placeholder="Masukkan password..." autocomplete="current-password" required/>
+            <button type="button" class="toggle-pw" onclick="togglePw()" id="toggle-pw-btn">👁</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login" id="btn-login">
+          <div class="spinner"></div>
+          <span class="btn-text">Masuk ke Panel Admin</span>
+        </button>
+      </form>
+    </div>
+
+    <div class="card-footer">
+      <a href="/">← Kembali ke Halaman Publik</a>
+    </div>
+  </div>
+
+  <div class="copy">© 2026 SIGAB — BPKAD Kabupaten Bojonegoro</div>
+
+  <script>
+    // Kalau sudah punya token valid, langsung redirect ke dashboard
+    (function checkExistingToken() {
+      const token = localStorage.getItem('sigab_token');
+      if (!token) return;
+      fetch('/api/auth/me', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      }).then(r => {
+        if (r.ok) window.location.replace('/admin/dashboard.html');
+      }).catch(() => {});
+    })();
+
+    function togglePw() {
+      const inp = document.getElementById('password');
+      const btn = document.getElementById('toggle-pw-btn');
+      const isHidden = inp.type === 'password';
+      inp.type    = isHidden ? 'text' : 'password';
+      btn.textContent = isHidden ? '🙈' : '👁';
+    }
+
+    function showAlert(msg, type = 'error') {
+      const box  = document.getElementById('alert-box');
+      const icon = document.getElementById('alert-icon');
+      const txt  = document.getElementById('alert-msg');
+      box.className  = 'alert ' + type;
+      icon.textContent = type === 'error' ? '⚠' : '✅';
+      txt.textContent  = msg;
+    }
+    function hideAlert() {
+      document.getElementById('alert-box').className = 'alert';
+    }
+
+    async function doLogin(e) {
+      e.preventDefault();
+      hideAlert();
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const btn      = document.getElementById('btn-login');
+
+      if (!username || !password) {
+        showAlert('Username dan password wajib diisi.');
+        return;
+      }
+
+      // Loading state
+      btn.disabled = true;
+      btn.classList.add('loading');
+
+      try {
+        const res  = await fetch('/api/auth/login', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ username, password }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          showAlert(data.error || 'Login gagal. Periksa kembali username dan password.');
+          document.getElementById('password').value = '';
+          return;
+        }
+
+        // Simpan token & info user
+        localStorage.setItem('sigab_token', data.token);
+        localStorage.setItem('sigab_user',  JSON.stringify(data.user));
+
+        showAlert('Login berhasil! Mengalihkan...', 'success');
+        setTimeout(() => window.location.replace('/admin/dashboard.html'), 800);
+
+      } catch (err) {
+        showAlert('Tidak dapat terhubung ke server. Coba beberapa saat lagi.');
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('loading');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <link rel="icon" type="image/png" href="/gambar/Group 23.png"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Feedback — SIGAB BPKAD Bojonegoro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0d2137; --navy2: #163351; --blue: #1a5f8e;
+      --gold: #c49a2a; --gold2: #dbb84a;
+      --text: #1a2535; --muted: #5a6a7e; --border: #dce3ec; --bg: #f4f6f9;
+      --success: #16a34a; --danger: #dc2626;
+    }
+    html, body { min-height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); background: var(--bg); }
+
+    /* NAVBAR */
+    .navbar {
+      background: var(--navy2); border-bottom: 3px solid var(--gold);
+      position: sticky; top: 0; z-index: 999;
+    }
+    .navbar-inner {
+      max-width: 100%; padding: 0 48px; height: 68px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .navbar-brand { display: flex; align-items: center; gap: 14px; }
+    .logo-box { width: 46px; height: 46px; border-radius: 8px; background: white; overflow: hidden; }
+    .logo-box img { width: 100%; height: 100%; object-fit: contain; padding: 3px; }
+    .navbar-text .navbar-name { color: white; font-size: 15px; font-weight: 800; }
+    .navbar-text .navbar-name span { color: var(--gold2); }
+    .navbar-text .navbar-sub { color: rgba(255,255,255,0.4); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
+    .back-btn {
+      padding: 9px 18px; background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.75);
+      border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none;
+      display: flex; align-items: center; gap: 7px; transition: all .18s;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+
+    /* HERO */
+    .fb-hero {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy2) 100%);
+      padding: 52px 40px 48px; text-align: center; position: relative; overflow: hidden;
+    }
+    .fb-hero::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    .fb-hero-inner { position: relative; z-index: 1; max-width: 600px; margin: 0 auto; }
+    .fb-hero-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.3);
+      color: var(--gold2); font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; padding: 6px 16px; border-radius: 100px; margin-bottom: 20px;
+    }
+    .fb-hero h1 { font-size: 32px; font-weight: 800; color: white; margin-bottom: 12px; line-height: 1.2; }
+    .fb-hero p  { font-size: 14px; color: rgba(255,255,255,0.65); line-height: 1.7; }
+
+    /* MAIN */
+    .fb-main {
+      max-width: 760px; margin: 0 auto; padding: 40px 24px 60px;
+    }
+
+    /* CARD */
+    .fb-card {
+      background: white; border: 1px solid var(--border); border-radius: 16px;
+      padding: 36px; margin-bottom: 20px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+    }
+    .fb-card-title {
+      font-size: 14px; font-weight: 700; color: var(--navy);
+      display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+    }
+    .fb-card-title i { color: var(--gold); }
+    .fb-card-sub { font-size: 12px; color: var(--muted); margin-bottom: 24px; }
+
+    /* RATING BINTANG */
+    .star-row {
+      display: flex; gap: 8px; justify-content: center; margin-bottom: 12px;
+    }
+    .star-btn {
+      font-size: 36px; cursor: pointer; transition: transform .15s;
+      color: #ddd; background: none; border: none; padding: 0;
+      line-height: 1;
+    }
+    .star-btn:hover, .star-btn.active { color: var(--gold2); transform: scale(1.15); }
+    .star-label {
+      text-align: center; font-size: 13px; font-weight: 600;
+      color: var(--muted); min-height: 22px; margin-bottom: 20px;
+    }
+
+    /* NPS SCORE */
+    .nps-label { font-size: 13px; color: var(--text); font-weight: 600; margin-bottom: 12px; text-align: center; }
+    .nps-row {
+      display: flex; gap: 6px; justify-content: center; margin-bottom: 8px; flex-wrap: wrap;
+    }
+    .nps-btn {
+      width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--border);
+      background: white; font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: all .15s; font-family: inherit; color: var(--muted);
+    }
+    .nps-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .nps-btn.nps-red    { border-color: #e74c3c; color: #e74c3c; background: #fef2f2; }
+    .nps-btn.nps-yellow { border-color: #f39c12; color: #f39c12; background: #fffbeb; }
+    .nps-btn.nps-green  { border-color: var(--success); color: var(--success); background: #f0fdf4; }
+    .nps-btn.selected   { transform: scale(1.12); font-size: 15px; }
+    .nps-hint { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 4px; padding: 0 4px; }
+
+    /* ASPEK PENILAIAN */
+    .aspek-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .aspek-item { background: var(--bg); border-radius: 10px; padding: 14px 16px; }
+    .aspek-name { font-size: 12px; font-weight: 600; color: var(--navy); margin-bottom: 10px; }
+    .aspek-stars { display: flex; gap: 4px; }
+    .aspek-star {
+      font-size: 22px; cursor: pointer; color: #ddd; transition: color .12s;
+      background: none; border: none; padding: 0; line-height: 1;
+    }
+    .aspek-star.on { color: var(--gold2); }
+
+    /* FORM */
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+    .form-control {
+      width: 100%; padding: 10px 13px; border: 1.5px solid var(--border);
+      border-radius: 9px; font-size: 13px; font-family: inherit; color: var(--text);
+      background: var(--bg); transition: border-color .15s; resize: vertical;
+    }
+    .form-control:focus { outline: none; border-color: var(--blue); background: white; }
+    .form-control::placeholder { color: #b0b8c6; }
+    .char-count { font-size: 10px; color: var(--muted); text-align: right; margin-top: 3px; }
+
+    /* CHECKBOX TAGS */
+    .tag-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag-btn {
+      padding: 6px 14px; border: 1.5px solid var(--border); border-radius: 100px;
+      font-size: 12px; font-weight: 500; cursor: pointer; background: white;
+      color: var(--muted); transition: all .15s; font-family: inherit;
+    }
+    .tag-btn.selected { background: #e8f0fb; border-color: var(--blue); color: var(--blue); font-weight: 600; }
+
+    /* SUBMIT */
+    .btn-submit {
+      width: 100%; padding: 14px; background: var(--navy); color: white;
+      border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: all .2s;
+      display: flex; align-items: center; justify-content: center; gap: 9px;
+    }
+    .btn-submit:hover:not(:disabled) { background: var(--navy2); transform: translateY(-1px); }
+    .btn-submit:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+    .btn-submit .spinner { width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:none; }
+    .btn-submit.loading .spinner { display:block; }
+    .btn-submit.loading .btn-text { display:none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* SUCCESS STATE */
+    .success-box {
+      text-align: center; padding: 48px 32px;
+      display: none;
+    }
+    .success-box.show { display: block; }
+    .success-icon { font-size: 64px; margin-bottom: 20px; }
+    .success-box h2 { font-size: 24px; font-weight: 800; color: var(--navy); margin-bottom: 10px; }
+    .success-box p  { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 28px; }
+    .btn-back-home {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px; background: var(--gold); color: var(--navy);
+      border-radius: 9px; font-size: 14px; font-weight: 700; text-decoration: none;
+      transition: all .2s;
+    }
+    .btn-back-home:hover { background: var(--gold2); }
+
+    /* PROGRESS */
+    .progress-bar {
+      height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 32px; overflow: hidden;
+    }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--gold)); border-radius: 2px; transition: width .3s; }
+    .progress-label { font-size: 11px; color: var(--muted); text-align: right; margin-top: 4px; }
+
+    /* ── TOAST NOTIFICATION ── */
+    .toast-wrap {
+      position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+      z-index: 9999; pointer-events: none;
+    }
+    .toast {
+      background: white; border-radius: 16px; padding: 0;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.06);
+      display: flex; flex-direction: column; align-items: center;
+      min-width: 320px; max-width: 380px;
+      opacity: 0; transform: translateY(-30px) scale(0.92);
+      transition: all 0s;
+      overflow: hidden;
+    }
+    .toast.show {
+      opacity: 1; transform: translateY(0) scale(1);
+      transition: opacity .4s cubic-bezier(0.34,1.56,0.64,1),
+                  transform .4s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .toast.hide {
+      opacity: 0; transform: translateY(-20px) scale(0.95);
+      transition: all .3s ease;
+    }
+    .toast-bar {
+      width: 100%; height: 5px;
+      background: linear-gradient(90deg, #16a34a, #22c55e, #86efac);
+      animation: toastProgress 3s linear forwards;
+    }
+    @keyframes toastProgress { from{width:100%} to{width:0} }
+    .toast-body {
+      padding: 24px 28px 22px; text-align: center;
+    }
+    .toast-emoji {
+      font-size: 48px; margin-bottom: 12px; display: block;
+      animation: toastBounce .6s cubic-bezier(0.34,1.56,0.64,1) .2s both;
+    }
+    @keyframes toastBounce { from{transform:scale(0) rotate(-15deg)} to{transform:scale(1) rotate(0)} }
+    .toast-title {
+      font-size: 17px; font-weight: 800; color: var(--navy);
+      margin-bottom: 6px; letter-spacing: -0.01em;
+    }
+    .toast-msg { font-size: 13px; color: var(--muted); line-height: 1.55; }
+    .toast-close {
+      position: absolute; top: 10px; right: 12px;
+      background: none; border: none; font-size: 16px;
+      color: var(--muted); cursor: pointer; padding: 2px 6px;
+      border-radius: 5px; transition: background .15s; pointer-events: all;
+    }
+    .toast-close:hover { background: var(--bg); }
+    /* Confetti */
+    .confetti-wrap {
+      position: fixed; inset: 0; pointer-events: none; z-index: 9998;
+      overflow: hidden;
+    }
+    .confetti-piece {
+      position: absolute; top: -10px; width: 10px; height: 10px;
+      opacity: 0;
+      animation: confettiFall linear forwards;
+    }
+    @keyframes confettiFall {
+      0%   { opacity:1; transform: translateY(0) rotate(0deg); }
+      100% { opacity:0; transform: translateY(100vh) rotate(720deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <div class="navbar-brand">
+        <div class="logo-box"><img src="/gambar/Group 23.png" alt="Logo SIGAB"/></div>
+        <div class="navbar-text">
+          <div class="navbar-name"><span>SIGAB</span></div>
+          <div class="navbar-sub">Sistem Informasi Geospasial Aset Bojonegoro</div>
+        </div>
+      </div>
+      <a href="/" class="back-btn"><i class="fa fa-arrow-left"></i> Kembali ke Beranda</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="fb-hero">
+    <div class="fb-hero-inner">
+      <div class="fb-hero-badge"><i class="fa fa-star"></i> Formulir Feedback</div>
+      <h1>Penilaian & Masukan Pengguna</h1>
+      <p>Bantu kami meningkatkan layanan SIGAB dengan memberikan penilaian dan masukan Anda. Setiap pendapat sangat berarti bagi pengembangan sistem ini.</p>
+    </div>
+  </div>
+
+  <div class="fb-main">
+
+    <!-- FORM FEEDBACK -->
+    <div id="form-wrap">
+
+      <!-- Progress -->
+      <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+      <div class="progress-label" id="progress-label">Lengkapi semua penilaian</div>
+
+      <!-- 1. Rating bintang keseluruhan -->
+      <div class="fb-card">
+        <div class="fb-card-title"><i class="fa fa-star"></i> Penilaian Keseluruhan</div>
+        <div class="fb-card-sub">Seberapa puas Anda dengan SIGAB secara keseluruhan?</div>
+        <div class="star-row" id="star-row">
+          <button class="star-btn" data-val="1" onclick="setRating(1)">★</button>
+          <button class="star-btn" data-val="2" onclick="setRating(2)">★</button>
+          <button class="star-btn" data-val="3" onclick="setRating(3)">★</button>
+          <button class="star-btn" data-val="4" onclick="setRating(4)">★</button>
+          <button class="star-btn" data-val="5" onclick="setRating(5)">★</button>
+        </div>
+        <div class="star-label" id="star-label">Klik bintang untuk memberi nilai</div>
+      </div>
+
+      <!-- 2. NPS Score -->
+      <div class="fb-card">
+        <div class="fb-card-title"><i class="fa fa-chart-bar"></i> Rekomendasi</div>
+        <div class="fb-card-sub">Seberapa besar kemungkinan Anda merekomendasikan SIGAB kepada rekan kerja?</div>
+        <div class="nps-label">Pilih angka 0–10</div>
+        <div class="nps-row" id="nps-row">
+          <button class="nps-btn nps-red"    onclick="setNPS(0)">0</button>
+          <button class="nps-btn nps-red"    onclick="setNPS(1)">1</button>
+          <button class="nps-btn nps-red"    onclick="setNPS(2)">2</button>
+          <button class="nps-btn nps-red"    onclick="setNPS(3)">3</button>
+          <button class="nps-btn nps-red"    onclick="setNPS(4)">4</button>
+          <button class="nps-btn nps-red"    onclick="setNPS(5)">5</button>
+          <button class="nps-btn nps-red"    onclick="setNPS(6)">6</button>
+          <button class="nps-btn nps-yellow" onclick="setNPS(7)">7</button>
+          <button class="nps-btn nps-yellow" onclick="setNPS(8)">8</button>
+          <button class="nps-btn nps-green"  onclick="setNPS(9)">9</button>
+          <button class="nps-btn nps-green"  onclick="setNPS(10)">10</button>
+        </div>
+        <div class="nps-hint"><span>Sangat tidak mungkin</span><span>Sangat mungkin</span></div>
+      </div>
+
+      <!-- 3. Aspek penilaian -->
+      <div class="fb-card">
+        <div class="fb-card-title"><i class="fa fa-list-check"></i> Penilaian Per Aspek</div>
+        <div class="fb-card-sub">Berikan nilai 1–5 untuk setiap aspek berikut.</div>
+        <div class="aspek-grid">
+          <div class="aspek-item">
+            <div class="aspek-name">🗺 Kemudahan Penggunaan Peta</div>
+            <div class="aspek-stars" id="aspek-0"></div>
+          </div>
+          <div class="aspek-item">
+            <div class="aspek-name">📊 Kelengkapan Informasi Aset</div>
+            <div class="aspek-stars" id="aspek-1"></div>
+          </div>
+          <div class="aspek-item">
+            <div class="aspek-name">⚡ Kecepatan & Performa Sistem</div>
+            <div class="aspek-stars" id="aspek-2"></div>
+          </div>
+          <div class="aspek-item">
+            <div class="aspek-name">🎨 Tampilan & Desain Antarmuka</div>
+            <div class="aspek-stars" id="aspek-3"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Tag fitur yang paling berguna -->
+      <div class="fb-card">
+        <div class="fb-card-title"><i class="fa fa-thumbs-up"></i> Fitur yang Paling Berguna</div>
+        <div class="fb-card-sub">Pilih satu atau lebih fitur yang menurut Anda paling bermanfaat.</div>
+        <div class="tag-grid" id="tag-grid">
+          <button class="tag-btn" onclick="toggleTag(this)">🗺 Peta Interaktif</button>
+          <button class="tag-btn" onclick="toggleTag(this)">🔍 Filter & Pencarian</button>
+          <button class="tag-btn" onclick="toggleTag(this)">📥 Ekspor Excel</button>
+          <button class="tag-btn" onclick="toggleTag(this)">📷 Foto Aset</button>
+          <button class="tag-btn" onclick="toggleTag(this)">📊 Statistik Real-time</button>
+          <button class="tag-btn" onclick="toggleTag(this)">🏛 Data KIB A (Tanah)</button>
+          <button class="tag-btn" onclick="toggleTag(this)">🏗 Data KIB C (Bangunan)</button>
+          <button class="tag-btn" onclick="toggleTag(this)">🔐 Panel Admin</button>
+        </div>
+      </div>
+
+      <!-- 5. Identitas (opsional) -->
+      <div class="fb-card">
+        <div class="fb-card-title"><i class="fa fa-user"></i> Identitas Pengguna <span style="font-size:11px;color:var(--muted);font-weight:400">(Opsional)</span></div>
+        <div class="fb-card-sub">Informasi ini membantu kami memahami kebutuhan pengguna. Tidak wajib diisi.</div>
+        <div class="form-group">
+          <label>Nama / Instansi</label>
+          <input type="text" class="form-control" id="fb-nama" placeholder="Nama Anda atau nama instansi..." oninput="updateProgress()"/>
+        </div>
+        <div class="form-group">
+          <label>Email (untuk tindak lanjut)</label>
+          <input type="email" class="form-control" id="fb-email" placeholder="email@contoh.com..."/>
+        </div>
+      </div>
+
+      <!-- 6. Saran & Masukan -->
+      <div class="fb-card">
+        <div class="fb-card-title"><i class="fa fa-pen-to-square"></i> Saran & Masukan</div>
+        <div class="fb-card-sub">Tuliskan saran, kritik, atau masukan Anda untuk pengembangan SIGAB.</div>
+        <div class="form-group">
+          <label>Apa yang perlu diperbaiki atau ditambahkan? <span style="color:var(--danger)">*</span></label>
+          <textarea class="form-control" id="fb-masukan" rows="5"
+            placeholder="Tulis masukan Anda di sini... Contoh: Saya ingin ada fitur pencarian berdasarkan nomor sertifikat, tampilan peta sudah bagus tapi perlu legend yang lebih jelas, dll."
+            maxlength="1000" oninput="countChar(this,'char-masukan'); updateProgress()"></textarea>
+          <div class="char-count"><span id="char-masukan">0</span>/1000 karakter</div>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Apakah ada kendala yang Anda temui?</label>
+          <textarea class="form-control" id="fb-kendala" rows="3"
+            placeholder="Contoh: Link foto tidak bisa dibuka, peta lambat saat zoom in, data kecamatan X kurang lengkap, dll."
+            maxlength="500" oninput="countChar(this,'char-kendala')"></textarea>
+          <div class="char-count"><span id="char-kendala">0</span>/500 karakter</div>
+        </div>
+      </div>
+
+      <!-- SUBMIT -->
+      <button class="btn-submit" id="btn-submit" onclick="submitFeedback()">
+        <div class="spinner"></div>
+        <span class="btn-text"><i class="fa fa-paper-plane"></i> Kirim Feedback</span>
+      </button>
+      <p style="text-align:center;font-size:11px;color:var(--muted);margin-top:12px">
+        Data feedback Anda akan digunakan untuk pengembangan SIGAB dan tidak akan disebarluaskan.
+      </p>
+
+    </div><!-- /form-wrap -->
+
+    <!-- SUCCESS STATE -->
+    <div class="success-box" id="success-box">
+      <div class="success-icon">🎉</div>
+      <h2>Terima Kasih!</h2>
+      <p>Feedback Anda telah berhasil dikirim. Masukan Anda sangat berarti bagi kami untuk terus meningkatkan kualitas layanan SIGAB — Sistem Informasi Geospasial Aset Bojonegoro.</p>
+      <a href="/" class="btn-back-home"><i class="fa fa-house"></i> Kembali ke Beranda</a>
+    </div>
+
+  </div><!-- /fb-main -->
+
+  <footer style="background:#081928;border-top:2px solid var(--gold);text-align:center;padding:18px;font-size:12px;color:rgba(255,255,255,0.35)">
+    © 2026 <span style="color:var(--gold2)">SIGAB</span> — BPKAD Kabupaten Bojonegoro
+  </footer>
+
+  <script>
+    let rating  = 0;
+    let nps     = null;
+    let aspek   = [0, 0, 0, 0];
+    let tagsSelected = [];
+
+    // ── BINTANG KESELURUHAN ──────────────────────────────
+    const starLabels = ['','Sangat Tidak Puas','Tidak Puas','Cukup Puas','Puas','Sangat Puas ✨'];
+    function setRating(val) {
+      rating = val;
+      document.querySelectorAll('.star-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i < val);
+      });
+      document.getElementById('star-label').textContent = starLabels[val];
+      updateProgress();
+    }
+
+    // ── NPS ──────────────────────────────────────────────
+    function setNPS(val) {
+      nps = val;
+      document.querySelectorAll('.nps-btn').forEach((btn, i) => {
+        btn.classList.toggle('selected', i === val);
+      });
+      updateProgress();
+    }
+
+    // ── ASPEK ─────────────────────────────────────────────
+    const aspekNames = ['Peta','Informasi','Performa','Tampilan'];
+    [0,1,2,3].forEach(idx => {
+      const container = document.getElementById('aspek-' + idx);
+      for (let i = 1; i <= 5; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'aspek-star';
+        btn.textContent = '★';
+        btn.onclick = () => setAspek(idx, i);
+        container.appendChild(btn);
+      }
+    });
+
+    function setAspek(idx, val) {
+      aspek[idx] = val;
+      const stars = document.getElementById('aspek-' + idx).querySelectorAll('.aspek-star');
+      stars.forEach((s, i) => s.classList.toggle('on', i < val));
+      updateProgress();
+    }
+
+    // ── TAGS ──────────────────────────────────────────────
+    function toggleTag(btn) {
+      btn.classList.toggle('selected');
+      tagsSelected = [...document.querySelectorAll('.tag-btn.selected')].map(b => b.textContent.trim());
+    }
+
+    // ── PROGRESS BAR ─────────────────────────────────────
+    function updateProgress() {
+      const masukan = document.getElementById('fb-masukan').value.trim();
+      let done = 0;
+      if (rating > 0)        done++;
+      if (nps !== null)      done++;
+      if (aspek.every(v=>v>0)) done++;
+      if (masukan.length > 10) done++;
+      const pct = Math.round(done / 4 * 100);
+      document.getElementById('progress').style.width = pct + '%';
+      document.getElementById('progress-label').textContent =
+        pct === 100 ? '✅ Siap dikirim!' : `${pct}% — ${4 - done} langkah lagi`;
+    }
+
+    // ── CHAR COUNT ────────────────────────────────────────
+    function countChar(el, id) {
+      document.getElementById(id).textContent = el.value.length;
+    }
+
+    // ── SUBMIT ────────────────────────────────────────────
+    async function submitFeedback() {
+      const masukan = document.getElementById('fb-masukan').value.trim();
+      if (rating === 0) return alert('Mohon berikan penilaian bintang terlebih dahulu.');
+      if (!masukan)     return alert('Mohon isi kolom saran dan masukan.');
+
+      const btn = document.getElementById('btn-submit');
+      btn.disabled = true; btn.classList.add('loading');
+
+      const payload = {
+        rating, nps,
+        aspek: { peta: aspek[0], informasi: aspek[1], performa: aspek[2], tampilan: aspek[3] },
+        fitur_berguna: tagsSelected,
+        nama:    document.getElementById('fb-nama').value.trim(),
+        email:   document.getElementById('fb-email').value.trim(),
+        masukan: masukan,
+        kendala: document.getElementById('fb-kendala').value.trim(),
+        timestamp: new Date().toISOString(),
+      };
+
+      // Kirim ke backend
+      try {
+        await fetch('/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } catch(e) {
+        // Fallback ke localStorage
+        const existing = JSON.parse(localStorage.getItem('sigab_feedback') || '[]');
+        existing.push(payload);
+        localStorage.setItem('sigab_feedback', JSON.stringify(existing));
+      }
+
+      await new Promise(r => setTimeout(r, 900));
+      btn.disabled = false; btn.classList.remove('loading');
+
+      // Tampilkan toast + confetti
+      showToast();
+      launchConfetti();
+
+      // Setelah 3.5 detik tampilkan success page
+      setTimeout(() => {
+        hideToast();
+        document.getElementById('form-wrap').style.display = 'none';
+        document.getElementById('success-box').classList.add('show');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 3500);
+    }
+
+    function showToast() {
+      const t = document.getElementById('toast');
+      t.classList.remove('hide');
+      t.classList.add('show');
+      // Reset progress bar
+      const bar = t.querySelector('.toast-bar');
+      bar.style.animation = 'none';
+      bar.offsetHeight; // reflow
+      bar.style.animation = 'toastProgress 3s linear forwards';
+    }
+
+    function hideToast() {
+      const t = document.getElementById('toast');
+      t.classList.remove('show');
+      t.classList.add('hide');
+    }
+
+    function launchConfetti() {
+      const wrap = document.getElementById('confetti-wrap');
+      wrap.innerHTML = '';
+      const colors = ['#c49a2a','#dbb84a','#1a5f8e','#16a34a','#dc2626','#7c3aed','#f59e0b'];
+      const shapes = ['circle','square','triangle'];
+      for (let i = 0; i < 80; i++) {
+        const el = document.createElement('div');
+        el.className = 'confetti-piece';
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const size  = 6 + Math.random() * 10;
+        const left  = Math.random() * 100;
+        const delay = Math.random() * 0.8;
+        const dur   = 2.5 + Math.random() * 1.5;
+        const shape = shapes[Math.floor(Math.random() * shapes.length)];
+        el.style.cssText = `
+          left:${left}%;
+          width:${size}px; height:${size}px;
+          background:${shape==='circle'||shape==='square'?color:'transparent'};
+          border-radius:${shape==='circle'?'50%':shape==='square'?'2px':'0'};
+          border:${shape==='triangle'?`${size/2}px solid transparent; border-bottom:${size}px solid ${color}`:'none'};
+          animation-duration:${dur}s;
+          animation-delay:${delay}s;
+        `;
+        wrap.appendChild(el);
+      }
+      // Bersihkan setelah 5 detik
+      setTimeout(() => { wrap.innerHTML = ''; }, 5000);
+    }
+  </script>
+
+  <!-- TOAST -->
+  <div class="toast-wrap">
+    <div class="toast" id="toast">
+      <div class="toast-bar"></div>
+      <button class="toast-close" onclick="hideToast()">✕</button>
+      <div class="toast-body">
+        <span class="toast-emoji">🎉</span>
+        <div class="toast-title">Terima Kasih!</div>
+        <div class="toast-msg">Masukan Anda sangat berharga bagi kami.<br/>Kami akan terus meningkatkan SIGAB.</div>
+      </div>
+    </div>
+  </div>
+  <div class="confetti-wrap" id="confetti-wrap"></div>
+
+</body>
+</html>

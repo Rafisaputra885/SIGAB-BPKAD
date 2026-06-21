@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Peta Aset — SIGAB BPKAD Bojonegoro</title>
+  <link rel="icon" type="image/png" href="/gambar/Group 23.png"/>
+  <meta name="description" content="Peta interaktif aset tanah dan bangunan Pemerintah Kabupaten Bojonegoro — SIGAB BPKAD"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0f2c4a; --blue: #1d6fa4;
+      --gold: #c9a84c; --gold2: #e8c96a;
+      --text: #1a2535; --muted: #6b7280; --border: #e5e7eb;
+      --bg:   #f8fafc; --surface: #ffffff;
+      --toolbar-w: 48px;
+      --panel-w: 272px;
+    }
+    html, body { height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; }
+
+    /* ── HEADER ── */
+    .header {
+      height: 54px; background: var(--navy); color: #fff;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px; border-bottom: 2px solid var(--gold);
+      position: relative; z-index: 1001; flex-shrink: 0;
+    }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .header-logo { width: 34px; height: 34px; border-radius: 6px; overflow: hidden; background: white; flex-shrink: 0; }
+    .header-logo img { width: 100%; height: 100%; object-fit: contain; padding: 2px; }
+    .header-title { font-size: 13px; font-weight: 700; line-height: 1.2; }
+    .header-sub   { font-size: 10px; opacity: 0.55; }
+    .header-right { display: flex; align-items: center; gap: 14px; }
+    .header-stats { display: flex; gap: 14px; }
+    .stat-chip    { text-align: right; }
+    .stat-label   { display: block; font-size: 9px; opacity: 0.55; text-transform: uppercase; letter-spacing: .06em; }
+    .stat-value   { display: block; font-size: 13px; font-weight: 700; }
+    .back-btn {
+      padding: 5px 12px; background: rgba(255,255,255,0.1); color: white;
+      border: 1px solid rgba(255,255,255,0.2); border-radius: 7px;
+      font-size: 12px; font-weight: 600; cursor: pointer;
+      font-family: inherit; transition: all .2s; text-decoration: none;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.2); }
+
+    /* ── LAYOUT ── */
+    .layout { display: flex; height: calc(100vh - 54px); position: relative; overflow: hidden; }
+    #map { flex: 1; }
+
+    /* ── KIRI: zoom + ukur (fixed kiri) ── */
+    .left-ctrl {
+      position: absolute; left: 12px; top: 12px;
+      z-index: 900; display: flex; flex-direction: column; gap: 6px;
+    }
+
+    /* Zoom control */
+    .zoom-ctrl {
+      background: white; border-radius: 10px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12); overflow: hidden;
+    }
+    .zoom-btn {
+      width: 36px; height: 36px; border: none; background: white;
+      font-size: 18px; font-weight: 300; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #555; transition: background .15s;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .zoom-btn:last-child { border-bottom: none; }
+    .zoom-btn:hover { background: #f4f8fc; color: var(--blue); }
+    .zoom-reset { font-size: 14px; color: var(--blue); font-weight: 700; }
+
+    /* Measure control */
+    .measure-panel {
+      background: white; border-radius: 10px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12); overflow: hidden;
+    }
+    .measure-btn {
+      width: 36px; height: 36px; border: none; background: white;
+      font-size: 14px; color: #555; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .15s; border-bottom: 1px solid #f0f0f0;
+      position: relative;
+    }
+    .measure-btn:last-child { border-bottom: none; }
+    .measure-btn:hover  { background: #f4f8fc; color: var(--blue); }
+    .measure-btn.active { background: #e8f4fb; color: var(--blue); }
+    .measure-btn .mtip {
+      position: absolute; left: 44px; top: 50%; transform: translateY(-50%);
+      background: rgba(15,44,74,0.88); color: white;
+      padding: 3px 9px; border-radius: 6px; font-size: 10px;
+      white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .15s;
+    }
+    .measure-btn:hover .mtip { opacity: 1; }
+
+    /* ── KANAN: toolbar tetap, panel overlay di sebelah kiri toolbar ── */
+    .right-toolbar {
+      position: absolute; top: 0; right: 0; bottom: 0;
+      width: var(--toolbar-w);
+      z-index: 902;
+      background: white;
+      border-left: 1px solid var(--border);
+      box-shadow: -2px 0 10px rgba(0,0,0,0.08);
+      display: flex; flex-direction: column; align-items: center;
+      padding: 10px 0; gap: 4px;
+    }
+    .rtool-btn {
+      width: 36px; height: 36px;
+      background: transparent; border: 1.5px solid transparent;
+      border-radius: 9px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .18s; position: relative; color: #555;
+      font-size: 16px;
+    }
+    .rtool-btn img { width: 20px; height: 20px; object-fit: contain; }
+    .rtool-btn:hover  { background: #f0f6ff; border-color: var(--border); color: var(--blue); }
+    .rtool-btn.active { background: #e8f4fb; border-color: var(--blue); color: var(--blue); }
+    .rtool-tip {
+      position: absolute; right: calc(var(--toolbar-w) + 4px); top: 50%; transform: translateY(-50%);
+      background: rgba(15,44,74,0.88); color: white;
+      padding: 3px 9px; border-radius: 6px; font-size: 10px;
+      white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .15s;
+    }
+    .rtool-btn:hover .rtool-tip { opacity: 1; }
+    .rtool-divider { width: 28px; height: 1px; background: var(--border); margin: 2px 0; }
+
+    /* Panel — absolute, slide dari kanan ke kiri, di kiri toolbar */
+    .panel {
+      position: absolute; top: 0; bottom: 0;
+      right: var(--toolbar-w); /* persis di kiri toolbar */
+      width: var(--panel-w);
+      z-index: 901;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+      display: flex; flex-direction: column;
+      /* hidden: geser ke kanan (tersembunyi di belakang toolbar) */
+      transform: translateX(100%);
+      transition: transform 0.32s cubic-bezier(0.4,0,0.2,1);
+      overflow: hidden;
+      pointer-events: all;
+    }
+    .panel.open { transform: translateX(0); }
+
+    .panel-header {
+      background: var(--navy);
+      color: white;
+      padding: 13px 14px 11px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .panel-header-left { display: flex; align-items: center; gap: 8px; }
+    .panel-header-icon {
+      width: 24px; height: 24px; background: rgba(201,168,76,0.25);
+      border-radius: 6px; display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+    }
+    .panel-close {
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.8); cursor: pointer; font-size: 12px;
+      width: 24px; height: 24px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .15s; flex-shrink: 0;
+    }
+    .panel-close:hover { background: rgba(255,255,255,0.2); color: white; }
+
+    /* Body panel: max-height agar tidak penuh */
+    .panel-body {
+      padding: 14px 16px;
+      flex: 1;           /* isi sisa tinggi panel */
+      overflow-y: auto;
+      scrollbar-width: thin; scrollbar-color: #d1d5db transparent;
+    }
+    .panel-body::-webkit-scrollbar { width: 4px; }
+    .panel-body::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+
+    .panel-section { margin-bottom: 22px; }
+    .panel-section:last-child { margin-bottom: 8px; }
+    .panel-sec-title {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .09em; color: var(--muted);
+      margin-bottom: 10px; padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-divider { height: 1px; background: var(--border); margin: 10px 0; }
+
+    /* Basemap + toggle dalam panel putih */
+    .basemap-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; cursor: pointer; font-size: 13px; color: var(--text); border-bottom: 1px solid #f3f4f6; }
+    .basemap-row:last-child { border-bottom: none; }
+    .basemap-row input[type="radio"] { accent-color: var(--blue); width: 14px; height: 14px; flex-shrink: 0; }
+    .basemap-thumb {
+      width: 28px; height: 20px; border-radius: 4px; border: 1px solid var(--border);
+      background-size: cover; background-position: center; flex-shrink: 0;
+    }
+    .thumb-osm    { background: linear-gradient(135deg, #a8d5a2 0%, #7ab8f5 100%); }
+    .thumb-sat    { background: linear-gradient(135deg, #3a5a3a 0%, #6b8f6b 100%); }
+    .thumb-topo   { background: linear-gradient(135deg, #c4a97d 0%, #8fb87d 100%); }
+
+    .toggle-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; cursor: pointer; font-size: 13px; color: var(--text); border-bottom: 1px solid #f3f4f6; }
+    .toggle-row:last-child { border-bottom: none; }
+    .toggle-row input[type="checkbox"] { display: none; }
+    .toggle-dot { width: 13px; height: 13px; border-radius: 3px; flex-shrink: 0; transition: opacity .15s; }
+    .toggle-dot.tanah    { background: #1d6fa4; }
+    .toggle-dot.bangunan { background: #F4A460; border-radius: 50%; border: 1.5px solid #C55A11; }
+    .toggle-dot.wilayah  { background: none; border: 2px solid #FFD700; }
+    .toggle-row input:not(:checked) + .toggle-dot { opacity: 0.25; }
+
+    .kec-list { margin-top: 6px; max-height: 260px; overflow-y: auto; }
+    .kec-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 12px; cursor: pointer; color: var(--text); border-bottom: 1px solid #f9fafb; }
+    .kec-item:last-child { border-bottom: none; }
+    .kec-item input[type="checkbox"] { accent-color: var(--gold); width: 13px; height: 13px; }
+    .kec-all-btn {
+      font-size: 11px; color: var(--blue); cursor: pointer;
+      background: none; border: none; font-family: inherit; padding: 0;
+      margin-bottom: 6px; text-decoration: underline;
+    }
+
+    .form-label { display: block; font-size: 11px; color: var(--muted); font-weight: 600; margin: 10px 0 4px; }
+    .form-control {
+      width: 100%; padding: 8px 11px; border: 1px solid var(--border); border-radius: 8px;
+      font-size: 13px; background: var(--bg); font-family: inherit; color: var(--text);
+      transition: border-color .15s;
+    }
+    .form-control:focus { outline: none; border-color: var(--blue); background: white; }
+    .form-control::placeholder { color: #b0b8c6; }
+    .btn-row { display: flex; gap: 8px; margin-top: 12px; }
+    .btn {
+      padding: 10px 12px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      cursor: pointer; border: 1.5px solid transparent; transition: all .15s;
+      font-family: inherit; flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px;
+    }
+    .btn-primary { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .btn-primary:hover { background: #163659; }
+    .btn-outline { background: white; border-color: var(--border); color: var(--text); }
+    .btn-outline:hover { background: var(--bg); border-color: #adb5bd; }
+
+    /* ── MEASURE RESULT + HINT ── */
+    .measure-result {
+      position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+      background: rgba(15,44,74,0.92); color: white;
+      padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      z-index: 950; display: none; white-space: nowrap;
+    }
+    .measure-result.show { display: block; }
+    .measure-hint {
+      position: absolute; top: 68px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.72); color: white;
+      padding: 5px 14px; border-radius: 6px; font-size: 11px;
+      z-index: 950; display: none; pointer-events: none;
+    }
+    .measure-hint.show { display: block; }
+    .map-measure-active { cursor: crosshair !important; }
+
+    /* ── KOORDINAT KURSOR ── */
+    .coord-bar {
+      position: absolute; bottom: 6px; left: 10px;
+      background: rgba(15,44,74,0.78); color: white;
+      padding: 3px 11px; border-radius: 6px;
+      font-size: 10px; font-family: monospace; z-index: 900;
+      pointer-events: none; letter-spacing: 0.04em;
+    }
+
+    /* ── POPUP ── */
+    .popup-content h4 {
+      font-size: 13px; font-weight: 700; margin-bottom: 7px;
+      color: var(--navy); border-bottom: 1px solid var(--border); padding-bottom: 5px;
+    }
+    .popup-content table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+    .popup-content td    { padding: 3px 4px; vertical-align: top; }
+    .popup-content td:first-child { color: var(--muted); width: 38%; font-weight: 500; }
+
+    /* ── MISC ── */
+    .leaflet-control-zoom { display: none !important; }
+    /* ── LEGENDA PETA ── */
+    .map-legend {
+      position: absolute; bottom: 36px; left: 12px;
+      z-index: 900; background: white;
+      border-radius: 10px; border: 1px solid var(--border);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+      padding: 10px 14px; min-width: 160px;
+    }
+    .legend-title {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--muted);
+      margin-bottom: 8px; padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; color: var(--text); padding: 3px 0;
+    }
+    .legend-sym {
+      width: 20px; height: 14px; border-radius: 3px; flex-shrink: 0;
+    }
+    .legend-sym.tanah    { background: #1d6fa4; border: 2px solid #FFD700; }
+    .legend-sym.bangunan {
+      width: 14px; height: 14px; border-radius: 50%;
+      background: #F4A460; border: 2px solid #C55A11;
+    }
+    .legend-sym.wilayah  { background: transparent; border: 2px dashed #FFD700; }
+    .legend-toggle {
+      position: absolute; top: -8px; right: -8px;
+      width: 20px; height: 20px; background: var(--border);
+      border-radius: 50%; border: none; cursor: pointer;
+      font-size: 10px; display: flex; align-items: center; justify-content: center;
+      color: var(--muted); transition: all .15s;
+    }
+    .legend-toggle:hover { background: #d1d5db; }
+
+
+    /* Label kecamatan di tengah polygon */
+    .kec-label {
+      background: none !important;
+      border: none !important;
+      box-shadow: none !important;
+      font-size: 10px !important;
+      font-weight: 700 !important;
+      color: rgba(255, 215, 0, 0.9) !important;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8), 0 0 6px rgba(0,0,0,0.6) !important;
+      white-space: nowrap !important;
+      pointer-events: none !important;
+      letter-spacing: 0.04em !important;
+      text-transform: uppercase !important;
+    }
+    .kec-label::before { display: none !important; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-left">
+      <div class="header-logo">
+        <img src="/gambar/Group 23.png" alt="Logo SIGAB"/>
+      </div>
+      <div>
+        <div class="header-title">WebGIS Aset Daerah — BPKAD Bojonegoro</div>
+        <div class="header-sub">Peta Interaktif Aset Tanah &amp; Bangunan</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-stats">
+        <div class="stat-chip"><span class="stat-label">Aset Tanah</span><span class="stat-value" id="stat-tanah">—</span></div>
+        <div class="stat-chip"><span class="stat-label">Bangunan</span><span class="stat-value" id="stat-bangunan">—</span></div>
+        <div class="stat-chip"><span class="stat-label">Total Luas</span><span class="stat-value" id="stat-luas">—</span></div>
+      </div>
+      <a href="/" class="back-btn">← Beranda</a>
+    </div>
+  </header>
+
+  <div class="layout">
+    <div id="map"></div>
+
+    <!-- KIRI: Zoom + Ukur -->
+    <div class="left-ctrl">
+      <div class="zoom-ctrl">
+        <button class="zoom-btn" onclick="map.zoomIn()" title="Zoom In">+</button>
+        <button class="zoom-btn zoom-reset" onclick="resetView()" title="Reset">⌂</button>
+        <button class="zoom-btn" onclick="map.zoomOut()" title="Zoom Out">−</button>
+      </div>
+      <div class="measure-panel">
+        <button class="measure-btn" id="btn-measure-dist" title="Ukur Jarak">
+          <i class="fa-solid fa-ruler"></i>
+          <span class="mtip">Ukur Jarak</span>
+        </button>
+        <button class="measure-btn" id="btn-measure-area" title="Ukur Luas">
+          <i class="fa-solid fa-draw-polygon"></i>
+          <span class="mtip">Ukur Luas</span>
+        </button>
+        <button class="measure-btn" id="btn-measure-clear" title="Hapus Ukuran">
+          <i class="fa-solid fa-eraser"></i>
+          <span class="mtip">Hapus</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- TOOLBAR KANAN (fixed) -->
+    <div class="right-toolbar">
+        <button class="rtool-btn" id="btn-panel-layer" onclick="togglePanel('layer')" title="Layer Peta">
+          <img src="/gambar/icons8-layers-64.png" alt="Layer"/>
+          <span class="rtool-tip">Layer Peta</span>
+        </button>
+        <div class="rtool-divider"></div>
+        <button class="rtool-btn" id="btn-panel-filter" onclick="togglePanel('filter')" title="Filter Aset">
+          <i class="fa fa-filter"></i>
+          <span class="rtool-tip">Filter Aset</span>
+        </button>
+    </div><!-- /right-toolbar -->
+
+    <!-- Panel Layer -->
+    <div class="panel" id="panel-layer">
+        <div class="panel-header">
+          <div class="panel-header-left">
+            <div class="panel-header-icon">🗺</div>
+            <span>Layer Peta</span>
+          </div>
+          <button class="panel-close" onclick="closePanel('layer')">✕</button>
+        </div>
+        <div class="panel-body">
+          <div class="panel-section">
+            <div class="panel-sec-title">Peta Dasar</div>
+            <label class="basemap-row">
+              <input type="radio" name="basemap" value="osm" onchange="changeBasemap(this.value)"/>
+              <div class="basemap-thumb thumb-osm"></div> OpenStreetMap
+            </label>
+            <label class="basemap-row">
+              <input type="radio" name="basemap" value="satelit" checked onchange="changeBasemap(this.value)"/>
+              <div class="basemap-thumb thumb-sat"></div> Citra Satelit (Esri)
+            </label>
+            <label class="basemap-row">
+              <input type="radio" name="basemap" value="topo" onchange="changeBasemap(this.value)"/>
+              <div class="basemap-thumb thumb-topo"></div> Topografi
+            </label>
+          </div>
+          <div class="panel-section">
+            <div class="panel-sec-title">Layer Aset</div>
+            <label class="toggle-row"><input type="checkbox" id="toggle-tanah" checked/><span class="toggle-dot tanah"></span> Aset Tanah (KIB A)</label>
+            <label class="toggle-row"><input type="checkbox" id="toggle-bangunan" checked/><span class="toggle-dot bangunan"></span> Bangunan (KIB C)</label>
+          </div>
+          <div class="panel-section">
+            <div class="panel-sec-title">Wilayah Administrasi</div>
+            <label class="toggle-row">
+              <input type="checkbox" id="toggle-wilayah" checked onchange="toggleWilayahAll(this.checked)"/>
+              <span class="toggle-dot wilayah"></span> Tampilkan Semua
+            </label>
+            <div class="kec-list" id="kec-list"></div>
+          </div>
+        </div>
+    </div><!-- /panel-layer -->
+
+    <!-- Panel Filter -->
+      <div class="panel" id="panel-filter">
+        <div class="panel-header">
+          <div class="panel-header-left">
+            <div class="panel-header-icon">🔍</div>
+            <span>Filter Aset</span>
+          </div>
+          <button class="panel-close" onclick="closePanel('filter')">✕</button>
+        </div>
+        <div class="panel-body">
+          <div class="panel-section">
+            <div class="panel-sec-title">Wilayah</div>
+            <label class="form-label">Kecamatan</label>
+            <select id="filter-kecamatan" class="form-control">
+              <option value="">-- Semua Kecamatan --</option>
+              <option>BOJONEGORO</option><option>BALEN</option><option>BAURENO</option>
+              <option>BUBULAN</option><option>DANDER</option><option>GAYAM</option>
+              <option>GONDANG</option><option>KALITIDU</option><option>KANOR</option>
+              <option>KAPAS</option><option>KASIMAN</option><option>KEDEWAN</option>
+              <option>KEDUNGADEM</option><option>KEPOHBARU</option><option>MALO</option>
+              <option>MARGOMULYO</option><option>NGAMBON</option><option>NGASEM</option>
+              <option>NGRAHO</option><option>PADANGAN</option><option>PURWOSARI</option>
+              <option>SEKAR</option><option>SUGIHWARAS</option><option>SUKOSEWU</option>
+              <option>TAMBAKREJO</option><option>TEMAYANG</option><option>TRUCUK</option>
+            </select>
+            <label class="form-label">Desa / Kelurahan</label>
+            <input type="text" id="filter-desa" class="form-control" placeholder="Ketik nama desa..."/>
+          </div>
+          <div class="panel-divider"></div>
+          <div class="panel-section">
+            <div class="panel-sec-title">Filter Spesifik</div>
+            <label class="form-label">NIBAR</label>
+            <input type="text" id="filter-nibar" class="form-control" placeholder="Nomor NIBAR..."/>
+            <label class="form-label">OPD Pengelola</label>
+            <input type="text" id="filter-opd" class="form-control" placeholder="Nama OPD..."/>
+          </div>
+          <div class="btn-row">
+            <button id="btn-filter" class="btn btn-primary"><i class="fa fa-search"></i> Terapkan</button>
+            <button id="btn-reset"  class="btn btn-outline"><i class="fa fa-undo"></i> Reset</button>
+          </div>
+        </div>
+    </div><!-- /panel-filter -->
+
+    <div class="measure-hint" id="measure-hint">Klik untuk titik &nbsp;|&nbsp; Klik ganda selesai &nbsp;|&nbsp; ESC batal</div>
+    <div class="measure-result" id="measure-result"></div>
+    <div class="coord-bar" id="coord-bar">Lat: — &nbsp;|&nbsp; Lng: —</div>
+
+    <!-- LEGENDA PETA -->
+    <div class="map-legend" id="map-legend">
+      <button class="legend-toggle" onclick="toggleLegend()" title="Sembunyikan">−</button>
+      <div class="legend-title">Legenda</div>
+      <div class="legend-item">
+        <div class="legend-sym tanah"></div>
+        <span>Aset Tanah (KIB A)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-sym bangunan"></div>
+        <span>Aset Bangunan (KIB C)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-sym wilayah"></div>
+        <span>Batas Kecamatan</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+  const BJN_BOUNDS   = L.latLngBounds(L.latLng(-7.6,111.4), L.latLng(-6.8,112.4));
+  const DEFAULT_CENTER = [-7.18, 111.88];
+  const DEFAULT_ZOOM   = 10;
+
+  const basemaps = {
+    osm:    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }),
+    satelit:L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '© Esri', maxZoom: 19 }),
+    topo:   L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { attribution: '© OpenTopoMap', maxZoom: 17 }),
+  };
+
+  const map = L.map('map', {
+    center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM,
+    zoomControl: false, layers: [basemaps.satelit],
+    maxBounds: BJN_BOUNDS.pad(0.3),
+  });
+
+  // Wilayah pane di bawah aset
+  map.createPane('wilayahPane');
+  map.getPane('wilayahPane').style.zIndex = '350';
+  map.getPane('wilayahPane').style.pointerEvents = 'none';
+
+  function resetView()       { map.flyTo(DEFAULT_CENTER, DEFAULT_ZOOM, { duration: 1 }); }
+  function changeBasemap(v)  { Object.values(basemaps).forEach(l => map.removeLayer(l)); map.addLayer(basemaps[v]); }
+
+  map.on('mousemove', e => {
+    document.getElementById('coord-bar').textContent = `Lat: ${e.latlng.lat.toFixed(6)}  |  Lng: ${e.latlng.lng.toFixed(6)}`;
+  });
+  map.on('mouseout', () => { document.getElementById('coord-bar').textContent = 'Lat: — | Lng: —'; });
+
+  // ── LAYER GROUPS ──
+  let layerTanah    = L.layerGroup().addTo(map);
+  let layerBangunan = L.layerGroup().addTo(map);
+  let wilayahLayers = {}, wilayahData = null, allKecamatan = [];
+
+  // ── PANEL TOGGLE ──
+  const panels = ['layer', 'filter'];
+  function togglePanel(name) {
+    const panel  = document.getElementById('panel-' + name);
+    const btn    = document.getElementById('btn-panel-' + name);
+    const isOpen = panel.classList.contains('open');
+    panels.forEach(p => {
+      document.getElementById('panel-' + p).classList.remove('open');
+      document.getElementById('btn-panel-' + p).classList.remove('active');
+    });
+    if (!isOpen) { panel.classList.add('open'); btn.classList.add('active'); }
+  }
+  function closePanel(name) {
+    document.getElementById('panel-' + name).classList.remove('open');
+    document.getElementById('btn-panel-' + name).classList.remove('active');
+  }
+
+  // ── WILAYAH ──
+  const styleWilayah      = { color: '#FFD700', weight: 2.5, opacity: 1, fillOpacity: 0, dashArray: '6 4' };
+  const styleWilayahHover = { color: '#FFD700', weight: 3.5, opacity: 1, fillOpacity: 0 };
+
+  async function loadLayerWilayah() {
+    try {
+      const res = await fetch('/api/geojson/wilayah');
+      wilayahData = await res.json();
+      allKecamatan = [...new Set(wilayahData.features.map(f => f.properties.nama_kecamatan).filter(Boolean))].sort();
+      allKecamatan.forEach(nama => {
+        const features = wilayahData.features.filter(f => f.properties.nama_kecamatan === nama);
+        const layer = L.geoJSON({ type:'FeatureCollection', features }, {
+          pane: 'wilayahPane',
+          style: styleWilayah,
+          onEachFeature(feature, l) {
+            // Label kecamatan: permanent tapi sangat kecil, muncul hanya di zoom >= 11
+            const tooltipEl = l.bindTooltip(feature.properties.nama_kecamatan, {
+              permanent: true,
+              direction: 'center',
+              className: 'kec-label',
+              opacity: 0,   // awalnya tersembunyi
+            });
+            // Tampilkan/sembunyikan label berdasarkan zoom
+            function updateKecLabel() {
+              const z = map.getZoom();
+              tooltipEl.setTooltipContent(feature.properties.nama_kecamatan);
+              const el = l.getTooltip() ? l.getTooltip().getElement() : null;
+              if (el) el.style.opacity = z >= 11 ? '1' : '0';
+            }
+            map.on('zoomend', updateKecLabel);
+            l.on('mouseover', () => l.setStyle(styleWilayahHover));
+            l.on('mouseout',  () => l.setStyle(styleWilayah));
+          },
+        }).addTo(map);
+        wilayahLayers[nama] = layer;
+      });
+      buildKecList();
+    } catch(e) { console.error(e); }
+  }
+
+  function buildKecList() {
+    const container = document.getElementById('kec-list');
+    container.innerHTML = '';
+    const btnAll = document.createElement('button');
+    btnAll.className = 'kec-all-btn'; btnAll.textContent = 'Pilih Semua';
+    btnAll.onclick = () => {
+      allKecamatan.forEach(n => {
+        const el = document.getElementById('chk-kec-' + n.replace(/\s/g,'_'));
+        if (el) el.checked = true;
+        if (!map.hasLayer(wilayahLayers[n])) map.addLayer(wilayahLayers[n]);
+      });
+      document.getElementById('toggle-wilayah').checked = true;
+    };
+    container.appendChild(btnAll);
+    const btnNone = document.createElement('button');
+    btnNone.className = 'kec-all-btn'; btnNone.style.marginLeft = '8px'; btnNone.textContent = 'Hapus Semua';
+    btnNone.onclick = () => {
+      allKecamatan.forEach(n => {
+        const el = document.getElementById('chk-kec-' + n.replace(/\s/g,'_'));
+        if (el) el.checked = false;
+        map.removeLayer(wilayahLayers[n]);
+      });
+      document.getElementById('toggle-wilayah').checked = false;
+    };
+    container.appendChild(btnNone);
+    allKecamatan.forEach(nama => {
+      const id = 'chk-kec-' + nama.replace(/\s/g,'_');
+      const label = document.createElement('label');
+      label.className = 'kec-item';
+      label.innerHTML = `<input type="checkbox" id="${id}" checked onchange="toggleKecamatan('${nama}', this.checked)"/> ${nama}`;
+      container.appendChild(label);
+    });
+  }
+
+  function toggleKecamatan(nama, show) {
+    if (!wilayahLayers[nama]) return;
+    show ? map.addLayer(wilayahLayers[nama]) : map.removeLayer(wilayahLayers[nama]);
+  }
+  function toggleWilayahAll(show) {
+    allKecamatan.forEach(nama => {
+      const el = document.getElementById('chk-kec-' + nama.replace(/\s/g,'_'));
+      if (el) el.checked = show;
+      show ? map.addLayer(wilayahLayers[nama]) : map.removeLayer(wilayahLayers[nama]);
+    });
+  }
+
+  // ── LAYER TANAH ──
+  const styleTanah = { color:'#FFD700', weight:2, opacity:1, fillColor:'#1d6fa4', fillOpacity:0.5 };
+  async function loadLayerTanah(params = {}) {
+    layerTanah.clearLayers();
+    const qs = new URLSearchParams(params).toString();
+    try {
+      const res  = await fetch(`/api/geojson/tanah?${qs}`);
+      const data = await res.json();
+      L.geoJSON(data, {
+        style: styleTanah,
+        onEachFeature(feature, layer) {
+          const p = feature.properties;
+          layer.bindPopup(`
+            <div class="popup-content">
+              <h4>${p.spesifikasi_lainnya || p.spesifikasi || p.nama_barang || 'Aset Tanah'}</h4>
+              <table>
+                <tr><td>NIBAR</td><td>${p.nibar||'-'}</td></tr>
+                <tr><td>OPD</td><td>${p.opd||'-'}</td></tr>
+                <tr><td>Lokasi</td><td>${p.desa_kelurahan||'-'}, ${p.kecamatan||'-'}</td></tr>
+                <tr><td>Luas</td><td>${Number(p.luas_m2||0).toLocaleString('id-ID')} m²</td></tr>
+                <tr><td>Hak</td><td>${p.nama_hak||'-'}</td></tr>
+                <tr><td>No. Hak</td><td>${p.nomor_hak||'-'}</td></tr>
+                <tr><td>Cara Perolehan</td><td>${p.cara_perolehan||'-'}</td></tr>
+                <tr><td>Nilai</td><td>Rp ${Number(p.nilai_perolehan||0).toLocaleString('id-ID')}</td></tr>
+              </table>
+            </div>`, { maxWidth:300 });
+          layer.on('mouseover', () => layer.setStyle({ fillOpacity:0.75, weight:3 }));
+          layer.on('mouseout',  () => layer.setStyle({ fillOpacity:0.5,  weight:2 }));
+        },
+      }).addTo(layerTanah);
+    } catch(e) { console.error(e); }
+  }
+
+  // ── LAYER BANGUNAN ──
+  async function loadLayerBangunan(params = {}) {
+    layerBangunan.clearLayers();
+    const qs = new URLSearchParams(params).toString();
+    try {
+      const res  = await fetch(`/api/geojson/bangunan?${qs}`);
+      const data = await res.json();
+      L.geoJSON(data, {
+        pointToLayer(feature, latlng) {
+          return L.circleMarker(latlng, { radius:7, color:'#C55A11', weight:1.5, fillColor:'#F4A460', fillOpacity:0.85 });
+        },
+        onEachFeature(feature, layer) {
+          const p = feature.properties;
+          const fotoHtml = p.foto_denah
+            ? `<tr><td>Foto</td><td><a href="${p.foto_denah}" target="_blank" rel="noopener noreferrer" style="color:var(--blue)">Lihat Foto ↗</a></td></tr>`
+            : '';
+          layer.bindPopup(`
+            <div class="popup-content">
+              <h4>${p.nama_barang||'Bangunan'}</h4>
+              <table>
+                <tr><td>NIBAR</td><td style="font-size:10px;word-break:break-all">${p.nibar||'-'}</td></tr>
+                <tr><td>OPD</td><td>${(p.opd||'-').replace('.xlsx','')}</td></tr>
+                <tr><td>Spesifikasi</td><td>${p.spesifikasi_lainnya||'-'}</td></tr>
+                <tr><td>Lokasi</td><td>${p.lokasi||'-'}</td></tr>
+                <tr><td>Desa</td><td>${p.desa_kelurahan||'-'}</td></tr>
+                <tr><td>Kecamatan</td><td>${p.kecamatan||'-'}</td></tr>
+                ${fotoHtml}
+              </table>
+            </div>`, { maxWidth:300 });
+        },
+      }).addTo(layerBangunan);
+    } catch(e) { console.error(e); }
+  }
+
+  // ── STATISTIK ──
+  async function loadStatistik() {
+    try {
+      const res  = await fetch('/api/statistik');
+      const data = await res.json();
+      document.getElementById('stat-tanah').textContent    = Number(data.total_tanah).toLocaleString('id-ID');
+      document.getElementById('stat-bangunan').textContent = Number(data.total_bangunan).toLocaleString('id-ID');
+      document.getElementById('stat-luas').textContent     = Number(data.total_luas_tanah).toLocaleString('id-ID') + ' m²';
+    } catch(e) {}
+  }
+
+  // ── TOGGLE LAYER ──
+  document.getElementById('toggle-tanah').addEventListener('change', e => {
+    e.target.checked ? map.addLayer(layerTanah) : map.removeLayer(layerTanah);
+  });
+  document.getElementById('toggle-bangunan').addEventListener('change', e => {
+    e.target.checked ? map.addLayer(layerBangunan) : map.removeLayer(layerBangunan);
+  });
+
+  // ── FILTER ──
+  document.getElementById('btn-filter').addEventListener('click', () => {
+    const params = {};
+    const kec   = document.getElementById('filter-kecamatan').value.trim();
+    const desa  = document.getElementById('filter-desa').value.trim();
+    const nibar = document.getElementById('filter-nibar').value.trim();
+    const opd   = document.getElementById('filter-opd').value.trim();
+    if (kec)   params.kecamatan = kec;
+    if (desa)  params.desa      = desa;
+    if (nibar) params.nibar     = nibar;
+    if (opd)   params.opd       = opd;
+    loadLayerTanah(params);
+    loadLayerBangunan(params);
+    closePanel('filter');
+  });
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    ['filter-kecamatan','filter-desa','filter-nibar','filter-opd'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    loadLayerTanah();
+    loadLayerBangunan();
+  });
+
+  // ── MEASUREMENT ──
+  let measureMode = null, measurePoints = [], measureLines = [], measureMarkers = [];
+  const resultBox = document.getElementById('measure-result');
+  const hintBox   = document.getElementById('measure-hint');
+  function toRad(d) { return d * Math.PI / 180; }
+  function haversine(a, b) {
+    const R=6371000, dLat=toRad(b.lat-a.lat), dLng=toRad(b.lng-a.lng);
+    const h=Math.sin(dLat/2)**2+Math.cos(toRad(a.lat))*Math.cos(toRad(b.lat))*Math.sin(dLng/2)**2;
+    return 2*R*Math.asin(Math.sqrt(h));
+  }
+  function polygonArea(pts) {
+    let area=0; const n=pts.length;
+    for(let i=0;i<n;i++){const j=(i+1)%n; area+=toRad(pts[j].lng-pts[i].lng)*(2+Math.sin(toRad(pts[i].lat))+Math.sin(toRad(pts[j].lat)));}
+    return Math.abs(area*6371000*6371000/2);
+  }
+  function formatDist(m) { return m>=1000?`${(m/1000).toFixed(2)} km`:`${m.toFixed(1)} m`; }
+  function formatArea(m2){ return m2>=10000?`${(m2/10000).toFixed(2)} ha (${m2.toFixed(0)} m²)`:`${m2.toFixed(1)} m²`; }
+  function clearMeasure() {
+    measureLines.forEach(l=>map.removeLayer(l)); measureMarkers.forEach(m=>map.removeLayer(m));
+    measureLines=[]; measureMarkers=[]; measurePoints=[];
+    resultBox.classList.remove('show'); hintBox.classList.remove('show');
+  }
+  function setMeasureMode(mode) {
+    if(measureMode===mode){ measureMode=null; clearMeasure(); document.querySelectorAll('.measure-btn').forEach(b=>b.classList.remove('active')); document.getElementById('map').classList.remove('map-measure-active'); return; }
+    clearMeasure(); measureMode=mode;
+    document.querySelectorAll('.measure-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById(mode==='distance'?'btn-measure-dist':'btn-measure-area').classList.add('active');
+    document.getElementById('map').classList.add('map-measure-active');
+    hintBox.classList.add('show');
+  }
+  document.getElementById('btn-measure-dist').addEventListener('click',  ()=>setMeasureMode('distance'));
+  document.getElementById('btn-measure-area').addEventListener('click',  ()=>setMeasureMode('area'));
+  document.getElementById('btn-measure-clear').addEventListener('click', ()=>{ measureMode=null; clearMeasure(); document.querySelectorAll('.measure-btn').forEach(b=>b.classList.remove('active')); document.getElementById('map').classList.remove('map-measure-active'); });
+
+  map.on('click', function(e) {
+    if(!measureMode) return;
+    measurePoints.push(e.latlng);
+    const dot = L.circleMarker(e.latlng,{radius:4,color:'#0f2c4a',weight:2,fillColor:'#c9a84c',fillOpacity:1}).addTo(map);
+    measureMarkers.push(dot);
+    measureLines.forEach(l=>map.removeLayer(l)); measureLines=[];
+    if(measurePoints.length>=2){
+      if(measureMode==='distance'){
+        const line=L.polyline(measurePoints,{color:'#0f2c4a',weight:2.5,dashArray:'6 4'}).addTo(map);
+        measureLines.push(line);
+        let total=0; for(let i=1;i<measurePoints.length;i++) total+=haversine(measurePoints[i-1],measurePoints[i]);
+        resultBox.textContent=`📏 Jarak: ${formatDist(total)}`; resultBox.classList.add('show');
+      } else {
+        const poly=L.polygon(measurePoints,{color:'#0f2c4a',weight:2,dashArray:'6 4',fillColor:'#1d6fa4',fillOpacity:0.15}).addTo(map);
+        measureLines.push(poly);
+        if(measurePoints.length>=3){resultBox.textContent=`📐 Luas: ${formatArea(polygonArea(measurePoints))}`; resultBox.classList.add('show');}
+      }
+    }
+  });
+  map.on('dblclick', function(e) {
+    if(!measureMode) return;
+    L.DomEvent.stop(e); measureMode=null;
+    document.querySelectorAll('.measure-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('map').classList.remove('map-measure-active');
+    hintBox.classList.remove('show');
+  });
+  document.addEventListener('keydown', e => {
+    if(e.key==='Escape'&&measureMode){ measureMode=null; clearMeasure(); document.querySelectorAll('.measure-btn').forEach(b=>b.classList.remove('active')); document.getElementById('map').classList.remove('map-measure-active'); }
+  });
+
+  // ── INIT ──
+  loadLayerWilayah();
+  loadLayerTanah();
+  loadLayerBangunan();
+  loadStatistik();
+
+  // Legenda toggle
+  let legendVisible = true;
+  function toggleLegend() {
+    legendVisible = !legendVisible;
+    const items = document.querySelectorAll('.legend-item, .legend-title');
+    items.forEach(el => el.style.display = legendVisible ? '' : 'none');
+    document.querySelector('.legend-toggle').textContent = legendVisible ? '−' : '+';
+  }
+  </script>
+</body>
+</html>

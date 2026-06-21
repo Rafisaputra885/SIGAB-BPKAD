@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <link rel="icon" type="image/png" href="/gambar/Group 23.png"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SIGAB — Sistem Informasi Geospasial Aset Bojonegoro</title>
+  <!-- Open Graph untuk share di WhatsApp/sosmed -->
+  <meta property="og:title" content="SIGAB — Sistem Informasi Geospasial Aset Bojonegoro"/>
+  <meta property="og:description" content="Portal resmi inventarisasi aset tanah &amp; bangunan Pemerintah Kabupaten Bojonegoro"/>
+  <meta property="og:image" content="/gambar/Group 23.png"/>
+  <meta property="og:url" content="https://sigab.bojonegorokab.go.id"/>
+  <meta property="og:type" content="website"/>
+  <meta name="twitter:card" content="summary"/>
+  <meta name="description" content="Portal resmi Sistem Informasi Geospasial Aset Bojonegoro — BPKAD Kabupaten Bojonegoro"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:   #0d2137;
+      --navy2:  #163351;
+      --blue:   #1a5f8e;
+      --blue2:  #2478b0;
+      --gold:   #c49a2a;
+      --gold2:  #dbb84a;
+      --gold3:  #f0d278;
+      --red:    #c0392b;
+      --white:  #ffffff;
+      --off:    #f4f6f9;
+      --text:   #1a2535;
+      --muted:  #5a6a7e;
+      --border: #dce3ec;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); background: var(--off); }
+
+    /* ══ TOP INFO BAR ══ */
+    .info-bar {
+      background: var(--navy);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 7px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .info-bar-left { display: flex; align-items: center; gap: 20px; }
+    .info-bar-item {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; color: rgba(255,255,255,0.5);
+    }
+    .info-bar-item i { font-size: 10px; color: var(--gold2); }
+    .info-bar-right { display: flex; gap: 14px; }
+    .info-bar-link {
+      font-size: 11px; color: rgba(255,255,255,0.45);
+      text-decoration: none; transition: color .15s;
+    }
+    .info-bar-link:hover { color: var(--gold2); }
+
+    /* ══ NAVBAR ══ */
+    .navbar {
+      background: var(--navy2);
+      border-bottom: 3px solid var(--gold);
+      position: sticky; top: 0; z-index: 999;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    }
+    .navbar-inner {
+      max-width: 100%; margin: 0;
+      padding: 0 48px; height: 68px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .navbar-brand { display: flex; align-items: center; gap: 14px; }
+    .navbar-logos { display: flex; align-items: center; gap: 8px; }
+    .logo-box {
+      width: 46px; height: 46px; border-radius: 9px;
+      background: transparent; overflow: hidden; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-box img { width: 100%; height: 100%; object-fit: contain; padding: 3px; }
+    .logo-divider { width: 1px; height: 32px; background: rgba(255,255,255,0.15); }
+    .navbar-text { line-height: 1.25; }
+    .navbar-name { color: white; font-size: 15px; font-weight: 800; letter-spacing: 0.01em; }
+    .navbar-name span { color: var(--gold2); }
+    .navbar-sub  { color: rgba(255,255,255,0.45); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
+    .navbar-nav  { display: flex; align-items: center; gap: 4px; }
+    .nav-link {
+      padding: 8px 16px; border-radius: 7px; font-size: 13px; font-weight: 500;
+      color: rgba(255,255,255,0.7); text-decoration: none; transition: all .18s;
+    }
+    .nav-link:hover { background: rgba(255,255,255,0.08); color: white; }
+    .nav-link.active { color: var(--gold2); }
+    .nav-divider { width: 1px; height: 20px; background: rgba(255,255,255,0.12); margin: 0 4px; }
+    .btn-peta {
+      padding: 9px 20px; background: var(--gold); color: var(--navy);
+      border-radius: 8px; font-size: 13px; font-weight: 700;
+      text-decoration: none; transition: all .18s;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .btn-peta:hover { background: var(--gold2); transform: translateY(-1px); }
+    .btn-admin {
+      padding: 9px 16px; background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.7);
+      border-radius: 8px; font-size: 12px; font-weight: 600;
+      text-decoration: none; transition: all .18s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .btn-admin:hover { background: rgba(255,255,255,0.14); color: white; border-color: rgba(255,255,255,0.3); }
+
+    /* ══ HERO ══ */
+    .hero {
+      position: relative; overflow: hidden;
+      min-height: 520px;
+      display: flex; align-items: center;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background-image: url('/gambar/FOTO20150911181811pm.jpg');
+      background-size: cover; background-position: center 20%;
+    }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(105deg, rgba(13,33,55,0.93) 0%, rgba(13,33,55,0.82) 50%, rgba(13,33,55,0.55) 100%);
+    }
+    /* Garis dekoratif */
+    .hero-accent {
+      position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
+      background: linear-gradient(180deg, var(--gold) 0%, var(--gold2) 100%);
+      z-index: 2;
+    }
+    .hero-inner {
+      max-width: 1280px; margin: 0 auto; padding: 80px 40px;
+      display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 64px;
+      align-items: center; position: relative; z-index: 2; width: 100%;
+    }
+
+    /* Left column */
+    .hero-kop {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 24px;
+    }
+    .hero-kop-line { width: 32px; height: 2px; background: var(--gold); }
+    .hero-kop-text {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--gold2);
+    }
+    .hero-h1 {
+      font-size: clamp(28px, 3.5vw, 44px); font-weight: 800;
+      color: white; line-height: 1.2; margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+    .hero-h1 span { color: var(--gold2); }
+    .hero-kepanjangan {
+      font-size: 13px; color: rgba(255,255,255,0.5);
+      font-weight: 500; margin-bottom: 20px; letter-spacing: 0.02em;
+    }
+    .hero-desc {
+      font-size: 15px; color: rgba(255,255,255,0.78);
+      line-height: 1.75; margin-bottom: 36px; max-width: 500px;
+    }
+    .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn-hero-1 {
+      padding: 13px 26px; background: var(--gold); color: var(--navy);
+      border-radius: 9px; font-size: 14px; font-weight: 700;
+      text-decoration: none; display: flex; align-items: center; gap: 8px;
+      transition: all .2s;
+    }
+    .btn-hero-1:hover { background: var(--gold2); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(201,168,76,0.35); }
+    .btn-hero-2 {
+      padding: 13px 22px; background: rgba(255,255,255,0.08);
+      border: 1.5px solid rgba(255,255,255,0.2); color: white;
+      border-radius: 9px; font-size: 13px; font-weight: 600;
+      text-decoration: none; display: flex; align-items: center; gap: 7px;
+      transition: all .2s;
+    }
+    .btn-hero-2:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.35); }
+    .btn-hero-3 {
+      padding: 13px 22px; background: rgba(255,255,255,0.05);
+      border: 1.5px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.6);
+      border-radius: 9px; font-size: 13px; font-weight: 500;
+      text-decoration: none; display: flex; align-items: center; gap: 7px;
+      transition: all .2s;
+    }
+    .btn-hero-3:hover { background: rgba(255,255,255,0.1); color: white; }
+
+    /* Right column — stat cards */
+    .hero-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .hstat {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px; padding: 20px 18px;
+      backdrop-filter: blur(8px);
+      transition: border-color .2s;
+    }
+    .hstat:hover { border-color: rgba(201,168,76,0.4); }
+    .hstat.wide { grid-column: span 2; }
+    .hstat.gold { border-color: rgba(201,168,76,0.3); background: rgba(201,168,76,0.08); }
+    .hstat-icon { font-size: 20px; margin-bottom: 10px; }
+    .hstat-val  { font-size: 28px; font-weight: 800; color: white; line-height: 1; margin-bottom: 4px; }
+    .hstat.gold .hstat-val { color: var(--gold2); }
+    .hstat-lbl  { font-size: 10px; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.08em; }
+
+    /* ══ STATS STRIP ══ */
+    .stats-strip {
+      background: white; border-bottom: 1px solid var(--border);
+    }
+    .stats-strip-inner {
+      max-width: 1280px; margin: 0 auto; padding: 0 40px;
+      display: flex;
+    }
+    .sstat {
+      flex: 1; padding: 20px 28px; border-right: 1px solid var(--border);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .sstat:last-child { border-right: none; }
+    .sstat-icon {
+      width: 38px; height: 38px; background: var(--off);
+      border-radius: 9px; display: flex; align-items: center;
+      justify-content: center; font-size: 18px; flex-shrink: 0;
+    }
+    .sstat-val { font-size: 20px; font-weight: 800; color: var(--navy); line-height: 1; }
+    .sstat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+
+    /* ══ SECTION UMUM ══ */
+    .section { padding: 60px 40px; }
+    .section-inner { max-width: 1280px; margin: 0 auto; }
+    .sec-eyebrow {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+    }
+    .sec-eyebrow-line { width: 28px; height: 2px; background: var(--gold); }
+    .sec-eyebrow-text { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--blue2); }
+    .sec-title { font-size: clamp(22px, 2.5vw, 30px); font-weight: 800; color: var(--navy); margin-bottom: 40px; line-height: 1.2; }
+
+    /* ══ FITUR CARDS ══ */
+    .fitur-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .fitur-card {
+      background: white; border: 1px solid var(--border);
+      border-radius: 14px; padding: 30px 26px;
+      text-decoration: none; color: inherit;
+      transition: all .22s; display: flex; flex-direction: column; gap: 14px;
+      position: relative; overflow: hidden;
+    }
+    .fitur-card::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--blue), var(--blue2));
+      transform: scaleX(0); transform-origin: left; transition: transform .3s;
+    }
+    .fitur-card:hover { border-color: var(--blue2); box-shadow: 0 8px 28px rgba(26,95,142,0.1); transform: translateY(-3px); }
+    .fitur-card:hover::after { transform: scaleX(1); }
+    .fitur-icon {
+      width: 52px; height: 52px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; font-size: 24px;
+    }
+    .fitur-icon.blue  { background: #e8f3fb; }
+    .fitur-icon.gold  { background: #fdf5e0; }
+    .fitur-icon.green { background: #e6f7ee; }
+    .fitur-icon.red   { background: #fdeaea; }
+    .fitur-title { font-size: 15px; font-weight: 700; color: var(--navy); }
+    .fitur-desc  { font-size: 13px; color: var(--muted); line-height: 1.65; }
+    .fitur-link  { font-size: 12px; font-weight: 600; color: var(--blue2); display: flex; align-items: center; gap: 5px; margin-top: auto; }
+
+    /* ══ INFO SECTION ══ */
+    .info-section { background: var(--navy); }
+    .info-section .sec-eyebrow-text { color: var(--gold2); }
+    .info-section .sec-title { color: white; margin-bottom: 0; }
+    .info-section-inner {
+      max-width: 1280px; margin: 0 auto; padding: 60px 40px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start;
+    }
+    .info-left p { font-size: 14px; color: rgba(255,255,255,0.65); line-height: 1.8; margin-top: 20px; max-width: 480px; }
+    .info-right { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .icard {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px; padding: 20px 18px;
+    }
+    .icard-icon { font-size: 22px; margin-bottom: 10px; }
+    .icard-val  { font-size: 22px; font-weight: 800; color: var(--gold2); margin-bottom: 4px; }
+    .icard-lbl  { font-size: 11px; color: rgba(255,255,255,0.45); }
+
+    /* ══ DATA SECTION ══ */
+    .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .data-card { background: white; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    .data-card-head {
+      padding: 16px 20px; background: var(--navy);
+      color: white; font-size: 13px; font-weight: 700;
+      display: flex; align-items: center; gap: 9px;
+      border-bottom: 2px solid var(--gold);
+    }
+    .data-card-body { padding: 6px 0; }
+    .data-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 20px; border-bottom: 1px solid #f0f2f5; font-size: 13px;
+    }
+    .data-row:last-child { border-bottom: none; }
+    .data-row-label { color: var(--muted); }
+    .data-row-value { font-weight: 600; color: var(--navy); }
+    .chip {
+      padding: 3px 11px; border-radius: 100px; font-size: 11px; font-weight: 600;
+    }
+    .chip-blue  { background: #e0f0fb; color: #1558a0; }
+    .chip-gold  { background: #fdf0cc; color: #7a5c10; }
+    .chip-green { background: #dff5eb; color: #1a6840; }
+    .chip-red   { background: #fde8e8; color: #8b1a1a; }
+
+    /* ══ CTA SECTION ══ */
+    .cta-section { background: linear-gradient(135deg, var(--navy) 0%, var(--navy2) 100%); }
+    .cta-inner {
+      max-width: 1280px; margin: 0 auto; padding: 60px 40px;
+      display: flex; align-items: center; justify-content: space-between; gap: 32px;
+    }
+    .cta-text h2 { font-size: 26px; font-weight: 800; color: white; margin-bottom: 10px; }
+    .cta-text p  { font-size: 14px; color: rgba(255,255,255,0.6); max-width: 480px; line-height: 1.7; }
+    .cta-btns { display: flex; gap: 12px; flex-shrink: 0; }
+    .cta-btn-1 {
+      padding: 13px 26px; background: var(--gold); color: var(--navy);
+      border-radius: 9px; font-size: 14px; font-weight: 700; text-decoration: none;
+      display: flex; align-items: center; gap: 8px; transition: all .2s; white-space: nowrap;
+    }
+    .cta-btn-1:hover { background: var(--gold2); }
+    .cta-btn-2 {
+      padding: 13px 22px; background: rgba(255,255,255,0.08);
+      border: 1.5px solid rgba(255,255,255,0.2); color: white;
+      border-radius: 9px; font-size: 13px; font-weight: 600; text-decoration: none;
+      display: flex; align-items: center; gap: 7px; transition: all .2s; white-space: nowrap;
+    }
+    .cta-btn-2:hover { background: rgba(255,255,255,0.15); }
+
+    /* ══ FOOTER ══ */
+    footer { background: #081928; border-top: 3px solid var(--gold); }
+    .footer-main {
+      max-width: 1280px; margin: 0 auto; padding: 44px 40px 32px;
+      display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 40px;
+    }
+    .footer-brand { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
+    .footer-logo { width: 64px; height: 64px; background: rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.12); }
+    .footer-logo img { width: 100%; height: 100%; object-fit: contain; padding: 3px; }
+    .footer-brand-text strong { display: block; color: white; font-size: 14px; font-weight: 800; }
+    .footer-brand-text span { font-size: 11px; color: rgba(255,255,255,0.35); }
+    .footer-desc { font-size: 12px; color: rgba(255,255,255,0.35); line-height: 1.7; margin-top: 6px; }
+    .footer-col h4 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold2); margin-bottom: 14px; }
+    .footer-link { display: block; font-size: 12px; color: rgba(255,255,255,0.45); text-decoration: none; padding: 4px 0; transition: color .15s; }
+    .footer-link:hover { color: var(--gold2); }
+    .footer-contact { font-size: 12px; color: rgba(255,255,255,0.4); display: flex; gap: 8px; align-items: flex-start; padding: 4px 0; }
+    .footer-contact i { color: var(--gold2); margin-top: 2px; flex-shrink: 0; }
+    .footer-bottom {
+      max-width: 1280px; margin: 0 auto; padding: 16px 40px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    }
+    .footer-copy { font-size: 11px; color: rgba(255,255,255,0.25); }
+    .footer-copy span { color: var(--gold2); }
+    .footer-badge {
+      padding: 4px 12px; background: rgba(201,168,76,0.12);
+      border: 1px solid rgba(201,168,76,0.25); border-radius: 100px;
+      font-size: 10px; color: var(--gold2); font-weight: 600; letter-spacing: 0.05em;
+    }
+
+    /* ══ FOOTER TAMBAHAN ══ */
+    .footer-brand-bar {
+      background: #0a1e30;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .footer-brand-bar-inner {
+      max-width: 1280px; margin: 0 auto; padding: 36px 48px;
+      display: flex; align-items: center; justify-content: space-between; gap: 40px;
+    }
+    .footer-brand-left { display: flex; gap: 16px; align-items: center; flex: 1; }
+    .footer-brand-text strong { display: block; color: white; font-size: 20px; font-weight: 800; margin-bottom: 3px; }
+    .footer-brand-text span   { display: block; font-size: 13px; color: rgba(255,255,255,0.45); margin-bottom: 8px; }
+    .footer-brand-text p      { font-size: 13px; color: rgba(255,255,255,0.4); line-height: 1.6; max-width: 360px; }
+    .footer-nav-col { flex-shrink: 0; }
+    .footer-nav-col h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold2); margin-bottom: 12px; }
+    .footer-nav-col .footer-link { display: flex; align-items: center; gap: 7px; font-size: 14px; color: rgba(255,255,255,0.65); text-decoration: none; padding: 5px 0; transition: color .15s; }
+    .footer-nav-col .footer-link:hover { color: var(--gold2); }
+    .footer-nav-col .footer-link i { color: var(--gold); font-size: 9px; }
+
+    .footer-main {
+      max-width: 1280px; margin: 0 auto; padding: 40px 48px 32px;
+      display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 40px;
+    }
+    .footer-col h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold2); margin-bottom: 16px; }
+    .footer-link { display: block; font-size: 13px; color: rgba(255,255,255,0.75); text-decoration: none; padding: 4px 0; transition: color .15s; }
+    .footer-link:hover { color: var(--gold2); }
+    .footer-link-inline { color: rgba(255,255,255,0.8); text-decoration: none; transition: color .15s; font-size: 13px; }
+    .footer-link-inline:hover { color: var(--gold2); }
+    .footer-contact { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.65; }
+    .footer-contact i { color: var(--gold2); margin-top: 3px; flex-shrink: 0; width: 14px; text-align: center; }
+
+    /* Media sosial */
+    .footer-sosmed {
+      display: flex; align-items: center; gap: 10px; padding: 6px 0;
+      text-decoration: none; color: rgba(255,255,255,0.8); font-size: 13px;
+      transition: color .15s;
+    }
+    .footer-sosmed:hover { color: white; }
+    .sosmed-icon {
+      width: 30px; height: 30px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; color: white; flex-shrink: 0;
+    }
+
+    .footer-bottom {
+      max-width: 1280px; margin: 0 auto; padding: 16px 40px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    }
+    .footer-copy { font-size: 13px; color: rgba(255,255,255,0.6); }
+    .footer-badge { font-size: 12px; color: rgba(255,255,255,0.45); }
+    .footer-badge span { color: var(--gold2); }
+
+
+    /* ── FLOATING SIDEBAR KANAN ── */
+    .floating-side {
+      position: fixed; right: 0; top: 50%; transform: translateY(-50%);
+      z-index: 990; display: flex; flex-direction: column; gap: 0;
+    }
+    .float-btn {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; cursor: pointer; text-decoration: none;
+      transition: all .2s; position: relative;
+      border: none; font-family: inherit;
+    }
+    .float-btn:first-child { border-radius: 10px 0 0 0; }
+    .float-btn:last-child  { border-radius: 0 0 0 10px; }
+    .float-btn.fb  { background: #1877f2; color: white; }
+    .float-btn.ig  { background: linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045); color: white; }
+    .float-btn.yt  { background: #ff0000; color: white; }
+    .float-btn.mail { background: #ea4335; color: white; }
+    .float-btn.feedback-btn { background: var(--gold); color: var(--navy); font-size: 14px; font-weight: 700; height: 48px; border-radius: 0 0 0 10px; }
+    .float-btn:hover { transform: translateX(-4px); box-shadow: -3px 0 12px rgba(0,0,0,0.2); z-index: 1; }
+    .float-btn .ftip {
+      position: absolute; right: 50px; top: 50%; transform: translateY(-50%);
+      background: rgba(15,44,74,0.9); color: white;
+      padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;
+      white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .15s;
+    }
+    .float-btn:hover .ftip { opacity: 1; }
+    .float-divider { width: 44px; height: 1px; background: rgba(255,255,255,0.2); }
+
+    /* SCROLL TO TOP */
+    .scroll-top {
+      position: fixed; right: 16px; bottom: 24px; z-index: 990;
+      width: 42px; height: 42px; background: var(--navy); color: white;
+      border: none; border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+      opacity: 0; pointer-events: none; transition: all .3s;
+    }
+    .scroll-top.show { opacity: 1; pointer-events: all; }
+    .scroll-top:hover { background: var(--navy2); transform: translateY(-2px); }
+    @media (max-width: 900px) {
+      .hero-inner, .info-section-inner, .data-grid, .footer-main { grid-template-columns: 1fr; }
+      .fitur-grid { grid-template-columns: 1fr 1fr; }
+      .cta-inner { flex-direction: column; }
+      .info-bar, .navbar-inner, .stats-strip-inner { padding: 0 20px; }
+      .section { padding: 48px 20px; }
+      .info-bar { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP INFO BAR -->
+  <div class="info-bar">
+    <div class="info-bar-left">
+      <div class="info-bar-item"><i class="fa fa-building"></i> BPKAD Kabupaten Bojonegoro</div>
+      <div class="info-bar-item"><i class="fa fa-map-pin"></i> Jl. Trunojoyo No. 12a, Bojonegoro, Jawa Timur 62111</div>
+      <div class="info-bar-item"><i class="fa fa-globe"></i> bpkad.bojonegorokab.go.id</div>
+    </div>
+    <div class="info-bar-right">
+      <a href="#" class="info-bar-link">Pemerintah Kab. Bojonegoro</a>
+      <a href="/admin/login.html" class="info-bar-link"><i class="fa fa-lock"></i> Login Admin</a>
+    </div>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <div class="navbar-brand">
+        <div class="navbar-logos">
+          <div class="logo-box">
+            <img src="/gambar/Group 23.png" alt="Logo SIGAB"/>
+          </div>
+          <div class="logo-divider"></div>
+        </div>
+        <div class="navbar-text">
+          <div class="navbar-name"><span>SIGAB</span></div>
+          <div class="navbar-sub">Sistem Informasi Geospasial Aset Bojonegoro</div>
+        </div>
+      </div>
+      <div class="navbar-nav">
+        <a href="/"            class="nav-link active">Beranda</a>
+        <a href="/tentang.html" class="nav-link">Tentang</a>
+        <a href="/peta.html"   class="nav-link">Peta Aset</a>
+        <div class="nav-divider"></div>
+        <a href="/admin/login.html" class="btn-admin"><i class="fa fa-lock"></i> Admin</a>
+        <a href="/peta.html"        class="btn-peta"><i class="fa fa-map"></i> Buka Peta</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-accent"></div>
+    <div class="hero-inner">
+      <div>
+        <div class="hero-kop">
+          <div class="hero-kop-line"></div>
+          <div class="hero-kop-text">Badan Pengelolaan Keuangan dan Aset Daerah</div>
+        </div>
+        <h1 class="hero-h1">Portal <span>Inventarisasi Aset</span><br/>Daerah Bojonegoro</h1>
+        <div class="hero-kepanjangan">Sistem Informasi Geospasial Aset Bojonegoro — SIGAB</div>
+        <p class="hero-desc">
+          Platform digital resmi pengelolaan dan visualisasi aset tanah &amp; bangunan
+          milik Pemerintah Kabupaten Bojonegoro. Data akurat, transparan, dan dapat diakses secara real-time.
+        </p>
+        <div class="hero-btns">
+          <a href="/peta.html" class="btn-hero-1"><i class="fa fa-map"></i> Buka Peta Interaktif</a>
+          <a href="/tentang.html" class="btn-hero-2"><i class="fa fa-circle-info"></i> Tentang SIGAB</a>
+          <a href="/admin/login.html" class="btn-hero-3"><i class="fa fa-lock"></i> Login Admin</a>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat gold">
+          <div class="hstat-icon">🏛</div>
+          <div class="hstat-val" id="h-tanah">—</div>
+          <div class="hstat-lbl">Aset Tanah (KIB A)</div>
+        </div>
+        <div class="hstat">
+          <div class="hstat-icon">🏗</div>
+          <div class="hstat-val" id="h-bangunan">—</div>
+          <div class="hstat-lbl">Aset Bangunan (KIB C)</div>
+        </div>
+        <div class="hstat wide">
+          <div class="hstat-icon">📐</div>
+          <div class="hstat-val" id="h-luas">—</div>
+          <div class="hstat-lbl">Total Luas Aset Tanah (m²)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS STRIP -->
+  <div class="stats-strip">
+    <div class="stats-strip-inner">
+      <div class="sstat">
+        <div class="sstat-icon">🏢</div>
+        <div><div class="sstat-val">28</div><div class="sstat-lbl">Kecamatan</div></div>
+      </div>
+      <div class="sstat">
+        <div class="sstat-icon">🏘</div>
+        <div><div class="sstat-val">419/11</div><div class="sstat-lbl">Desa / Kelurahan</div></div>
+      </div>
+      <div class="sstat">
+        <div class="sstat-icon">📋</div>
+        <div><div class="sstat-val">KIB A & C</div><div class="sstat-lbl">Jenis Inventaris</div></div>
+      </div>
+      <div class="sstat">
+        <div class="sstat-icon">🔄</div>
+        <div><div class="sstat-val">Real-time</div><div class="sstat-lbl">Pembaruan Data</div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FITUR -->
+  <div class="section" style="background:var(--off)">
+    <div class="section-inner">
+      <div class="sec-eyebrow">
+        <div class="sec-eyebrow-line"></div>
+        <div class="sec-eyebrow-text">Layanan Sistem</div>
+      </div>
+      <h2 class="sec-title">Fitur Unggulan SIGAB</h2>
+      <div class="fitur-grid">
+        <a href="/peta.html" class="fitur-card">
+          <div class="fitur-icon blue">🗺</div>
+          <div class="fitur-title">Peta Interaktif Aset</div>
+          <div class="fitur-desc">Visualisasi persebaran aset tanah dan bangunan di seluruh wilayah Kabupaten Bojonegoro dengan basemap satelit dan batas kecamatan.</div>
+          <div class="fitur-link">Buka Peta <i class="fa fa-arrow-right fa-xs"></i></div>
+        </a>
+        <a href="/peta.html" class="fitur-card">
+          <div class="fitur-icon gold">🔍</div>
+          <div class="fitur-title">Filter & Pencarian Aset</div>
+          <div class="fitur-desc">Cari dan filter aset berdasarkan kecamatan, desa, NIBAR, dan OPD pengelola. Klik marker untuk melihat detail informasi aset secara lengkap.</div>
+          <div class="fitur-link">Coba Filter <i class="fa fa-arrow-right fa-xs"></i></div>
+        </a>
+        <a href="/tentang.html" class="fitur-card">
+          <div class="fitur-icon green">📊</div>
+          <div class="fitur-title">Statistik Real-Time</div>
+          <div class="fitur-desc">Data jumlah aset, total luas, dan sebaran per kecamatan diperbarui otomatis langsung dari basis data spasial PostgreSQL + PostGIS.</div>
+          <div class="fitur-link">Pelajari Lebih <i class="fa fa-arrow-right fa-xs"></i></div>
+        </a>
+        <a href="/admin/login.html" class="fitur-card">
+          <div class="fitur-icon red">🔐</div>
+          <div class="fitur-title">Panel Administrasi</div>
+          <div class="fitur-desc">Pengelolaan data aset secara langsung — tambah, edit, hapus, dan verifikasi data KIB A & C oleh staf BPKAD yang berwenang.</div>
+          <div class="fitur-link">Login Admin <i class="fa fa-arrow-right fa-xs"></i></div>
+        </a>
+        <a href="/admin/login.html" class="fitur-card">
+          <div class="fitur-icon blue">📥</div>
+          <div class="fitur-title">Ekspor Laporan Excel</div>
+          <div class="fitur-desc">Unduh data KIB A (Tanah) dan KIB C (Bangunan) dalam format Excel terstruktur dengan filter kecamatan untuk kebutuhan pelaporan dan audit.</div>
+          <div class="fitur-link">Unduh Data <i class="fa fa-arrow-right fa-xs"></i></div>
+        </a>
+        <a href="/tentang.html" class="fitur-card">
+          <div class="fitur-icon gold">📷</div>
+          <div class="fitur-title">Dokumentasi Foto Aset</div>
+          <div class="fitur-desc">Setiap aset bangunan dilengkapi tautan foto dan denah yang dapat diakses langsung melalui popup peta tanpa perlu kunjungan lapangan.</div>
+          <div class="fitur-link">Lihat Selengkapnya <i class="fa fa-arrow-right fa-xs"></i></div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFO DARK SECTION -->
+  <div class="info-section">
+    <div class="info-section-inner">
+      <div class="info-left">
+        <div class="sec-eyebrow">
+          <div class="sec-eyebrow-line"></div>
+          <div class="sec-eyebrow-text">Tentang Sistem</div>
+        </div>
+        <h2 class="sec-title">Pengelolaan Aset Daerah Berbasis Geospasial</h2>
+        <p>SIGAB merupakan sistem informasi terintegrasi yang dirancang untuk mendukung pengelolaan aset milik Pemerintah Kabupaten Bojonegoro secara digital. Sistem ini memungkinkan pencatatan, pemutakhiran, dan pengawasan aset tanah serta bangunan dilakukan secara akurat, transparan, dan berkelanjutan sesuai prinsip Standar Akuntansi Pemerintahan (SAP).</p>
+        <div style="margin-top:28px">
+          <a href="/tentang.html" style="display:inline-flex;align-items:center;gap:8px;padding:11px 22px;background:var(--gold);color:var(--navy);border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">
+            Baca Selengkapnya <i class="fa fa-arrow-right fa-xs"></i>
+          </a>
+        </div>
+      </div>
+      <div class="info-right">
+        <div class="icard">
+          <div class="icard-icon">🏛</div>
+          <div class="icard-val" id="i-tanah">354</div>
+          <div class="icard-lbl">Bidang Tanah (KIB A)</div>
+        </div>
+        <div class="icard">
+          <div class="icard-icon">🏗</div>
+          <div class="icard-val" id="i-bangunan">677</div>
+          <div class="icard-lbl">Unit Bangunan (KIB C)</div>
+        </div>
+        <div class="icard">
+          <div class="icard-icon">📐</div>
+          <div class="icard-val">644,83</div>
+          <div class="icard-lbl">Hektar Luas Total</div>
+        </div>
+        <div class="icard">
+          <div class="icard-icon">🗺</div>
+          <div class="icard-val">28</div>
+          <div class="icard-lbl">Kecamatan Tercakup</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA CARDS — Informasi Layanan -->
+  <div class="section" style="background:white">
+    <div class="section-inner">
+      <div class="sec-eyebrow">
+        <div class="sec-eyebrow-line"></div>
+        <div class="sec-eyebrow-text">Informasi Layanan</div>
+      </div>
+      <h2 class="sec-title">Data Aset &amp; Cakupan Wilayah</h2>
+      <div class="data-grid">
+        <div class="data-card">
+          <div class="data-card-head"><i class="fa fa-database"></i> Informasi Data Aset</div>
+          <div class="data-card-body">
+            <div class="data-row"><span class="data-row-label">Sumber Data</span><span class="data-row-value">BPKAD Kab. Bojonegoro</span></div>
+            <div class="data-row"><span class="data-row-label">Periode Data</span><span class="data-row-value">Per 3 Maret 2026</span></div>
+            <div class="data-row"><span class="data-row-label">KIB A — Tanah</span><span class="chip chip-blue">354 Bidang</span></div>
+            <div class="data-row"><span class="data-row-label">KIB C — Bangunan</span><span class="chip chip-gold">677 Unit</span></div>
+            <div class="data-row"><span class="data-row-label">Sistem Proyeksi</span><span class="data-row-value">EPSG:4326 (WGS 84)</span></div>
+            <div class="data-row"><span class="data-row-label">Batas Wilayah</span><span class="chip chip-green">Tersedia</span></div>
+            <div class="data-row"><span class="data-row-label">Dokumentasi Foto</span><span class="chip chip-green">280 Bangunan</span></div>
+          </div>
+        </div>
+        <div class="data-card">
+          <div class="data-card-head"><i class="fa fa-map"></i> Cakupan Wilayah Administrasi</div>
+          <div class="data-card-body">
+            <div class="data-row"><span class="data-row-label">Kabupaten</span><span class="data-row-value">Bojonegoro</span></div>
+            <div class="data-row"><span class="data-row-label">Provinsi</span><span class="data-row-value">Jawa Timur</span></div>
+            <div class="data-row"><span class="data-row-label">Jumlah Kecamatan</span><span class="chip chip-blue">28 Kecamatan</span></div>
+            <div class="data-row"><span class="data-row-label">Jumlah Desa</span><span class="chip chip-blue">419 Desa</span></div>
+            <div class="data-row"><span class="data-row-label">Jumlah Kelurahan</span><span class="chip chip-gold">11 Kelurahan</span></div>
+            <div class="data-row"><span class="data-row-label">Luas Wilayah</span><span class="data-row-value">±2.307 km²</span></div>
+            <div class="data-row"><span class="data-row-label">Status Peta</span><span class="chip chip-green">Real-time</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEEDBACK CTA -->
+  <div class="cta-section">
+    <div class="cta-inner">
+      <div class="cta-text">
+        <h2>Bantu Kami Meningkatkan Layanan</h2>
+        <p>Pendapat dan masukan Anda sangat berarti bagi pengembangan SIGAB. Berikan penilaian dan saran untuk membantu kami menghadirkan layanan informasi aset daerah yang lebih baik.</p>
+      </div>
+      <div class="cta-btns">
+        <a href="/feedback.html" class="cta-btn-1"><i class="fa fa-star"></i> Beri Penilaian</a>
+        <a href="/peta.html"     class="cta-btn-2"><i class="fa fa-map"></i> Buka Peta</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <!-- Footer brand bar -->
+    <div class="footer-brand-bar">
+      <div class="footer-brand-bar-inner">
+        <div class="footer-brand-left">
+          <div class="footer-logo"><img src="/gambar/Group 23.png" alt="Logo SIGAB"/></div>
+          <div class="footer-brand-text">
+            <strong>SIGAB</strong>
+            <span>Sistem Informasi Geospasial Aset Bojonegoro</span>
+            <p>Platform resmi pengelolaan aset tanah &amp; bangunan Pemerintah Kabupaten Bojonegoro.</p>
+          </div>
+        </div>
+        <div class="footer-nav-col">
+          <h4>Navigasi</h4>
+          <a href="/"             class="footer-link"><i class="fa fa-chevron-right fa-xs"></i> Beranda</a>
+          <a href="/tentang.html" class="footer-link"><i class="fa fa-chevron-right fa-xs"></i> Tentang SIGAB</a>
+          <a href="/peta.html"    class="footer-link"><i class="fa fa-chevron-right fa-xs"></i> Peta Interaktif</a>
+          <a href="/admin/login.html" class="footer-link"><i class="fa fa-chevron-right fa-xs"></i> Panel Admin</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer info columns -->
+    <div class="footer-main">
+      <!-- Kontak -->
+      <div class="footer-col">
+        <h4>Kontak Kami</h4>
+        <div class="footer-contact">
+          <i class="fa fa-map-location-dot"></i>
+          <a href="https://maps.app.goo.gl/ABBikeatdE9cNPae6" target="_blank" rel="noopener noreferrer" class="footer-link-inline">Jl. Trunojoyo No. 12a, Bojonegoro, Kadipaten, Kec. Bojonegoro, Kabupaten Bojonegoro, Jawa Timur 62111</a>
+        </div>
+        <div class="footer-contact">
+          <i class="fa fa-envelope"></i>
+          <a href="https://mail.google.com/mail/u/1/?fs=1&to=bpkadbojonegoro@gmail.com&tf=cm" target="_blank" rel="noopener noreferrer" class="footer-link-inline">bpkadbojonegoro@gmail.com</a>
+        </div>
+        <div class="footer-contact">
+          <i class="fa fa-globe"></i>
+          <a href="https://bpkad.bojonegorokab.go.id" target="_blank" rel="noopener noreferrer" class="footer-link-inline">bpkad.bojonegorokab.go.id</a>
+        </div>
+      </div>
+
+      <!-- Jam Kerja -->
+      <div class="footer-col">
+        <h4>Jam Kerja</h4>
+        <div class="footer-contact">
+          <i class="fa fa-calendar-days"></i>
+          <div>
+            <div style="color:rgba(255,255,255,0.75);font-weight:600;margin-bottom:4px">Senin — Jumat</div>
+            <div>08.00 – 16.00 WIB</div>
+          </div>
+        </div>
+        <div class="footer-contact" style="margin-top:10px">
+          <i class="fa fa-circle-xmark" style="color:#e87070"></i>
+          <div>
+            <div style="color:rgba(255,255,255,0.4)">Sabtu, Minggu &amp; Hari Libur</div>
+            <div style="color:rgba(255,255,255,0.3);font-size:11px">Kantor Tutup</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Media Sosial -->
+      <div class="footer-col">
+        <h4>Media Sosial</h4>
+        <a href="https://www.instagram.com/bpkadbojonegoro" target="_blank" rel="noopener noreferrer" class="footer-sosmed">
+          <div class="sosmed-icon" style="background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)">
+            <i class="fa-brands fa-instagram"></i>
+          </div>
+          <span>@bpkadbojonegoro</span>
+        </a>
+        <a href="https://www.facebook.com/profile.php?id=100079308837855" target="_blank" rel="noopener noreferrer" class="footer-sosmed">
+          <div class="sosmed-icon" style="background:#1877f2">
+            <i class="fa-brands fa-facebook-f"></i>
+          </div>
+          <span>bpkadbojonegoro</span>
+        </a>
+        <a href="https://www.youtube.com/@bpkadbojonegoro4460" target="_blank" rel="noopener noreferrer" class="footer-sosmed">
+          <div class="sosmed-icon" style="background:#ff0000">
+            <i class="fa-brands fa-youtube"></i>
+          </div>
+          <span>bpkadbojonegoro</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Footer bottom -->
+    <div class="footer-bottom">
+      <div class="footer-copy">BPKAD Bojonegoro © 2026. Hak Cipta Dilindungi Undang-Undang.</div>
+      <div class="footer-badge"><span>SIGAB</span> — Sistem Informasi Geospasial Aset Bojonegoro</div>
+    </div>
+  </footer>
+
+  <script>
+    async function loadStats() {
+      try {
+        const res  = await fetch('/api/statistik');
+        const data = await res.json();
+        const tanah    = Number(data.total_tanah).toLocaleString('id-ID');
+        const bangunan = Number(data.total_bangunan).toLocaleString('id-ID');
+        const luas     = Number(data.total_luas_tanah).toLocaleString('id-ID');
+        document.getElementById('h-tanah').textContent    = tanah;
+        document.getElementById('h-bangunan').textContent = bangunan;
+        document.getElementById('h-luas').textContent     = luas;
+        document.getElementById('i-tanah').textContent    = tanah;
+        document.getElementById('i-bangunan').textContent = bangunan;
+      } catch(e) {}
+    }
+    loadStats();
+  </script>
+
+  <!-- FLOATING SIDEBAR KANAN -->
+  <div class="floating-side">
+    <a href="https://www.facebook.com/profile.php?id=100079308837855" target="_blank" rel="noopener noreferrer" class="float-btn fb">
+      <i class="fa-brands fa-facebook-f"></i>
+      <span class="ftip">Facebook</span>
+    </a>
+    <div class="float-divider"></div>
+    <a href="https://www.instagram.com/bpkadbojonegoro" target="_blank" rel="noopener noreferrer" class="float-btn ig">
+      <i class="fa-brands fa-instagram"></i>
+      <span class="ftip">Instagram</span>
+    </a>
+    <div class="float-divider"></div>
+    <a href="https://www.youtube.com/@bpkadbojonegoro4460" target="_blank" rel="noopener noreferrer" class="float-btn yt">
+      <i class="fa-brands fa-youtube"></i>
+      <span class="ftip">YouTube</span>
+    </a>
+    <div class="float-divider"></div>
+    <a href="https://mail.google.com/mail/u/1/?fs=1&to=bpkadbojonegoro@gmail.com&tf=cm" target="_blank" rel="noopener noreferrer" class="float-btn mail">
+      <i class="fa fa-envelope"></i>
+      <span class="ftip">Email Kami</span>
+    </a>
+    <div class="float-divider"></div>
+    <a href="/feedback.html" class="float-btn feedback-btn">
+      <i class="fa fa-star"></i>
+      <span class="ftip">Beri Feedback</span>
+    </a>
+  </div>
+
+  <!-- SCROLL TO TOP -->
+  <button class="scroll-top" id="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+    <i class="fa fa-chevron-up"></i>
+  </button>
+
+  <script>
+    // Scroll to top visibility
+    window.addEventListener('scroll', () => {
+      document.getElementById('scroll-top').classList.toggle('show', window.scrollY > 300);
+    });
+  </script>
+
+</body>
+</html>
