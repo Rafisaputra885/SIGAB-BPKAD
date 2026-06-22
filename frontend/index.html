@@ -447,14 +447,81 @@
     }
     .scroll-top.show { opacity: 1; pointer-events: all; }
     .scroll-top:hover { background: var(--navy2); transform: translateY(-2px); }
-    @media (max-width: 900px) {
-      .hero-inner, .info-section-inner, .data-grid, .footer-main { grid-template-columns: 1fr; }
-      .fitur-grid { grid-template-columns: 1fr 1fr; }
-      .cta-inner { flex-direction: column; }
-      .info-bar, .navbar-inner, .stats-strip-inner { padding: 0 20px; }
-      .section { padding: 48px 20px; }
-      .info-bar { display: none; }
+
+    /* ══ HAMBURGER MENU ══ */
+    .nav-hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      background: none; border: none; cursor: pointer; padding: 6px; margin-left: 8px;
     }
+    .nav-hamburger span {
+      display: block; width: 22px; height: 2px;
+      background: rgba(255,255,255,0.85); border-radius: 2px; transition: all .3s;
+    }
+    .navbar-nav-mobile {
+      display: none; position: absolute; top: 68px; left: 0; right: 0;
+      background: var(--navy2); border-bottom: 3px solid var(--gold);
+      flex-direction: column; padding: 10px 16px 16px; gap: 4px; z-index: 998;
+    }
+    .navbar-nav-mobile.open { display: flex; }
+    .navbar-nav-mobile .nav-link  { padding: 11px 14px; font-size: 14px; border-radius: 8px; }
+    .navbar-nav-mobile .btn-admin,
+    .navbar-nav-mobile .btn-peta  { justify-content: center; margin-top: 4px; }
+
+    @media (max-width: 900px) {
+      .info-bar { display: none; }
+      .navbar-inner { padding: 0 16px; position: relative; }
+      .navbar-nav { display: none; }
+      .nav-hamburger { display: flex; }
+      .hero-inner { grid-template-columns: 1fr; padding: 48px 20px 40px; gap: 32px; }
+      .hero-desc { font-size: 14px; max-width: 100%; }
+      .hero-btns { flex-direction: column; }
+      .btn-hero-1, .btn-hero-2, .btn-hero-3 { justify-content: center; }
+      .hero-stats { grid-template-columns: 1fr 1fr; }
+      .hstat.wide { grid-column: span 2; }
+      .stats-strip-inner { flex-wrap: wrap; padding: 0; }
+      .sstat { flex: 0 0 50%; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+      .sstat:nth-child(odd) { border-right: 1px solid var(--border); }
+      .sstat:nth-child(even) { border-right: none; }
+      .section { padding: 40px 16px; }
+      .sec-title { margin-bottom: 24px; }
+      .fitur-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+      .info-section-inner { grid-template-columns: 1fr; padding: 40px 16px; gap: 28px; }
+      .info-right { grid-template-columns: 1fr 1fr; }
+      .data-grid { grid-template-columns: 1fr; gap: 14px; }
+      .cta-inner { flex-direction: column; padding: 40px 16px; text-align: center; gap: 20px; }
+      .cta-btns { flex-direction: column; width: 100%; }
+      .cta-btn-1, .cta-btn-2 { justify-content: center; }
+      .footer-brand-bar-inner { flex-direction: column; padding: 24px 16px; gap: 20px; }
+      .footer-nav-col { width: 100%; }
+      .footer-main { grid-template-columns: 1fr; padding: 28px 16px; gap: 20px; }
+      .footer-bottom { padding: 14px 16px; flex-direction: column; gap: 4px; }
+      .floating-side {
+        top: auto; bottom: 0; right: 0; left: 0;
+        flex-direction: row; transform: none; justify-content: center;
+        background: var(--navy2); border-top: 2px solid var(--gold);
+        padding: 8px 12px; gap: 4px; border-radius: 0;
+      }
+      .float-btn { border-radius: 8px !important; height: 40px; width: 40px; }
+      .float-btn.feedback-btn { height: 40px; width: auto; padding: 0 12px; font-size: 12px; border-radius: 8px !important; }
+      .float-btn:hover { transform: translateY(-3px) !important; }
+      .float-btn .ftip { display: none !important; }
+      .float-divider { width: 1px; height: 20px; }
+      .scroll-top { bottom: 68px; right: 12px; }
+      .footer-bottom { margin-bottom: 60px; }
+    }
+    @media (max-width: 600px) {
+      .fitur-grid { grid-template-columns: 1fr; }
+      .hero-stats { grid-template-columns: 1fr; }
+      .hstat.wide { grid-column: span 1; }
+      .navbar-sub { display: none; }
+      .logo-divider { display: none; }
+    }
+    @media (max-width: 400px) {
+      .info-right { grid-template-columns: 1fr; }
+      .hero-h1 { font-size: 26px; }
+      .sstat { flex: 0 0 100%; border-right: none !important; }
+    }
+
   </style>
 </head>
 <body>
@@ -495,6 +562,18 @@
         <a href="/admin/login.html" class="btn-admin"><i class="fa fa-lock"></i> Admin</a>
         <a href="/peta.html"        class="btn-peta"><i class="fa fa-map"></i> Buka Peta</a>
       </div>
+      <!-- HAMBURGER -->
+      <button class="nav-hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div><!-- /navbar-inner -->
+    <!-- MOBILE MENU -->
+    <div class="navbar-nav-mobile" id="mobile-menu">
+      <a href="/"             class="nav-link active">Beranda</a>
+      <a href="/tentang.html" class="nav-link">Tentang</a>
+      <a href="/peta.html"    class="nav-link">Peta Aset</a>
+      <a href="/admin/login.html" class="btn-admin"><i class="fa fa-lock"></i> Admin</a>
+      <a href="/peta.html"        class="btn-peta"><i class="fa fa-map"></i> Buka Peta</a>
     </div>
   </nav>
 
@@ -855,5 +934,17 @@
     });
   </script>
 
+  <script>
+    function toggleMobileMenu() {
+      document.getElementById('mobile-menu').classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+      const menu = document.getElementById('mobile-menu');
+      const btn  = document.getElementById('hamburger');
+      if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.classList.remove('open');
+      }
+    });
+  </script>
 </body>
 </html>

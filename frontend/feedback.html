@@ -245,6 +245,26 @@
       0%   { opacity:1; transform: translateY(0) rotate(0deg); }
       100% { opacity:0; transform: translateY(100vh) rotate(720deg); }
     }
+
+    @media (max-width: 768px) {
+      .navbar-inner { padding: 0 16px; }
+      .fb-hero { padding: 40px 16px 36px; }
+      .fb-hero h1 { font-size: 24px; }
+      .fb-main { padding: 24px 12px 40px; }
+      .fb-card { padding: 24px 18px; }
+      .aspek-grid { grid-template-columns: 1fr; }
+      .nps-row { gap: 4px; }
+      .nps-btn { width: 38px; height: 38px; font-size: 12px; }
+      .star-btn { font-size: 28px; }
+      .tag-grid { gap: 6px; }
+      .toast { min-width: 280px; max-width: 90vw; }
+      .back-btn span { display: none; }
+    }
+    @media (max-width: 480px) {
+      .fb-hero h1 { font-size: 20px; }
+      .fb-card-title { font-size: 13px; }
+      .nps-btn { width: 32px; height: 32px; font-size: 11px; }
+    }
   </style>
 </head>
 <body>
