@@ -221,9 +221,111 @@
     }
     .shortcut-btn:hover { border-color: var(--blue); color: var(--blue); background: #eff6ff; }
     .shortcut-btn i { color: var(--blue); font-size: 16px; width: 20px; }
+
+    /* ══ HAMBURGER BUTTON ══ */
+    .hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      background: none; border: none; cursor: pointer; padding: 6px;
+      flex-shrink: 0;
+    }
+    .hamburger span {
+      display: block; width: 20px; height: 2px;
+      background: var(--navy); border-radius: 2px; transition: all .3s;
+    }
+
+    /* ══ SIDEBAR OVERLAY ══ */
+    .sidebar-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5); z-index: 998;
+    }
+    .sidebar-overlay.show { display: block; }
+
+    @media (max-width: 768px) {
+      /* Layout */
+      .admin-layout { flex-direction: column; }
+
+      /* Sidebar jadi drawer dari kiri */
+      .sidebar {
+        position: fixed; top: 0; left: 0; bottom: 0;
+        width: 240px; z-index: 999;
+        transform: translateX(-100%);
+        transition: transform .3s ease;
+      }
+      .sidebar.open { transform: translateX(0); }
+
+      /* Hamburger tampil */
+      .hamburger { display: flex; }
+
+      /* Main tidak overflow */
+      .main { height: 100vh; overflow: hidden; }
+
+      /* Topbar */
+      .topbar { padding: 0 16px; gap: 10px; }
+      .topbar-left h1 { font-size: 13px; }
+      .topbar-left p  { display: none; }
+      .topbar-right   { gap: 8px; }
+
+      /* Content area */
+      .content { padding: 16px; }
+
+      /* Grid 2 kolom → 1 kolom */
+      .stats-grid,
+      .ekspor-grid,
+      .data-grid,
+      .user-grid { grid-template-columns: 1fr !important; }
+
+      /* Tabel scroll horizontal */
+      .table-wrap,
+      .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      table { min-width: 600px; }
+
+      /* Card padding lebih kecil */
+      .ekspor-card,
+      .card,
+      .stat-card { padding: 18px !important; }
+
+      /* Form full width */
+      .form-row,
+      .filter-bar { flex-direction: column; gap: 8px; }
+      .form-row .form-control,
+      .filter-bar .form-control,
+      .filter-bar select,
+      .filter-bar input { width: 100%; }
+
+      /* Button full width di mobile */
+      .btn-row { flex-direction: column; }
+      .btn-row .btn { width: 100%; justify-content: center; }
+
+      /* Modal full screen */
+      .modal-box {
+        width: 95vw !important;
+        max-height: 90vh !important;
+        overflow-y: auto;
+        margin: 0 auto;
+      }
+
+      /* Map container */
+      .mini-map { height: 200px !important; }
+
+      /* Tabs scroll */
+      .tab-bar { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .tab-btn { white-space: nowrap; flex-shrink: 0; }
+
+      /* Validasi cards */
+      .val-grid { grid-template-columns: 1fr !important; }
+    }
+
+    @media (max-width: 480px) {
+      .content { padding: 12px; }
+      .topbar  { padding: 0 12px; }
+      .topbar-left h1 { font-size: 12px; }
+      table { min-width: 500px; font-size: 11px; }
+      .modal-box { width: 98vw !important; padding: 16px !important; }
+    }
   </style>
 </head>
 <body>
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 <div class="admin-layout">
 
   <!-- SIDEBAR -->
@@ -278,6 +380,10 @@
   <!-- MAIN -->
   <div class="main">
     <div class="topbar">
+      <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+
       <div class="topbar-left">
         <h1>Dashboard Admin</h1>
         <p>Selamat datang, <span id="topbar-name">—</span></p>
@@ -480,6 +586,20 @@
         '<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Gagal memuat status.</div>';
     }
   }
+</script>
+  <script>
+  function toggleSidebar() {
+    document.querySelector('.sidebar').classList.toggle('open');
+    document.getElementById('sidebar-overlay').classList.toggle('show');
+  }
+  function closeSidebar() {
+    document.querySelector('.sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('show');
+  }
+  // Tutup sidebar saat klik link (mobile)
+  document.querySelectorAll('.sidebar-link').forEach(link => {
+    link.addEventListener('click', closeSidebar);
+  });
 </script>
 </body>
 </html>
