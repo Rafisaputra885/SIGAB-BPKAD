@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -159,10 +160,11 @@
 
     /* ── MINI MAP ── */
     .map-wrap { position:relative; }
-    #mini-map { height:220px; border-radius:8px; border:1.5px solid var(--border); z-index:1; }
+    #mini-map { height:300px; border-radius:8px; border:1.5px solid var(--border); z-index:1; }
     .map-hint { font-size:10px; color:var(--muted); margin-top:5px; }
     .coord-display { display:flex; gap:8px; margin-top:8px; }
     .coord-box { flex:1; padding:6px 10px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-size:11px; font-family:monospace; color:var(--navy); }
+    .kec-tooltip { font-size:10px; font-weight:700; color:var(--navy); background:rgba(255,255,255,0.85); border:none; box-shadow:none; padding:1px 4px; }
 
     /* Empty state */
     .empty-state { text-align:center; padding:48px 20px; color:var(--muted); }
@@ -172,110 +174,81 @@
     /* Loading */
     .loading-row td { text-align:center; padding:32px; color:var(--muted); font-size:12px; }
 
-    /* ══ HAMBURGER BUTTON ══ */
-    .hamburger {
-      display: none; flex-direction: column; gap: 5px;
-      background: none; border: none; cursor: pointer; padding: 6px;
-      flex-shrink: 0;
+    /* ── POLYGON EDITOR ── */
+    .map-toolbar { display:flex; gap:6px; margin-bottom:6px; flex-wrap:wrap; align-items:center; }
+    .map-tool-btn {
+      padding:5px 12px; border-radius:6px; font-size:11px; font-weight:600;
+      cursor:pointer; border:1.5px solid var(--border); background:white;
+      color:var(--text); font-family:inherit; transition:all .15s;
+      display:flex; align-items:center; gap:5px;
     }
-    .hamburger span {
-      display: block; width: 20px; height: 2px;
-      background: var(--navy); border-radius: 2px; transition: all .3s;
-    }
-
-    /* ══ SIDEBAR OVERLAY ══ */
-    .sidebar-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.5); z-index: 998;
-    }
-    .sidebar-overlay.show { display: block; }
-
-    @media (max-width: 768px) {
-      /* Layout */
-      .admin-layout { flex-direction: column; }
-
-      /* Sidebar jadi drawer dari kiri */
-      .sidebar {
-        position: fixed; top: 0; left: 0; bottom: 0;
-        width: 240px; z-index: 999;
-        transform: translateX(-100%);
-        transition: transform .3s ease;
-      }
-      .sidebar.open { transform: translateX(0); }
-
-      /* Hamburger tampil */
-      .hamburger { display: flex; }
-
-      /* Main tidak overflow */
-      .main { height: 100vh; overflow: hidden; }
-
-      /* Topbar */
-      .topbar { padding: 0 16px; gap: 10px; }
-      .topbar-left h1 { font-size: 13px; }
-      .topbar-left p  { display: none; }
-      .topbar-right   { gap: 8px; }
-
-      /* Content area */
-      .content { padding: 16px; }
-
-      /* Grid 2 kolom → 1 kolom */
-      .stats-grid,
-      .ekspor-grid,
-      .data-grid,
-      .user-grid { grid-template-columns: 1fr !important; }
-
-      /* Tabel scroll horizontal */
-      .table-wrap,
-      .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-      table { min-width: 600px; }
-
-      /* Card padding lebih kecil */
-      .ekspor-card,
-      .card,
-      .stat-card { padding: 18px !important; }
-
-      /* Form full width */
-      .form-row,
-      .filter-bar { flex-direction: column; gap: 8px; }
-      .form-row .form-control,
-      .filter-bar .form-control,
-      .filter-bar select,
-      .filter-bar input { width: 100%; }
-
-      /* Button full width di mobile */
-      .btn-row { flex-direction: column; }
-      .btn-row .btn { width: 100%; justify-content: center; }
-
-      /* Modal full screen */
-      .modal-box {
-        width: 95vw !important;
-        max-height: 90vh !important;
-        overflow-y: auto;
-        margin: 0 auto;
-      }
-
-      /* Map container */
-      .mini-map { height: 200px !important; }
-
-      /* Tabs scroll */
-      .tab-bar { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-      .tab-btn { white-space: nowrap; flex-shrink: 0; }
-
-      /* Validasi cards */
-      .val-grid { grid-template-columns: 1fr !important; }
-    }
-
-    @media (max-width: 480px) {
-      .content { padding: 12px; }
-      .topbar  { padding: 0 12px; }
-      .topbar-left h1 { font-size: 12px; }
-      table { min-width: 500px; font-size: 11px; }
-      .modal-box { width: 98vw !important; padding: 16px !important; }
-    }
+    .map-tool-btn:hover { border-color:var(--blue); color:var(--blue); }
+    .map-tool-btn.active { background:var(--navy); color:white; border-color:var(--navy); }
+    .map-tool-btn.danger { background:#fee2e2; border-color:#fecaca; color:var(--danger); }
+    .map-status { font-size:10px; color:var(--muted); padding:4px 10px; background:var(--bg); border-radius:6px; border:1px solid var(--border); }
+    .map-status.ok  { color:var(--success); background:#f0fdf4; border-color:#bbf7d0; }
+    .map-status.err { color:var(--danger);  background:#fef2f2; border-color:#fecaca; }
+    .geojson-info { font-size:10px; color:var(--muted); margin-top:4px; font-family:monospace; }
+    /* ── HISTORY ── */
+    .geom-changed { display:inline-flex; align-items:center; gap:4px; background:#f3e8ff; color:#7c3aed; border:1px solid #e9d5ff; border-radius:100px; font-size:10px; font-weight:700; padding:2px 8px; }
+    .history-panel { position:fixed; top:0; right:0; bottom:0; width:420px; background:white; border-left:1px solid var(--border); box-shadow:-8px 0 32px rgba(0,0,0,0.15); z-index:8000; display:flex; flex-direction:column; transform:translateX(100%); transition:transform .35s cubic-bezier(0.4,0,0.2,1); }
+    .history-panel.open { transform:translateX(0); }
+    .history-panel-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.3); z-index:7999; display:none; }
+    .history-panel-overlay.show { display:block; }
+    .hp-head { padding:16px 18px; border-bottom:1px solid var(--border); background:var(--navy); color:white; flex-shrink:0; }
+    .hp-head-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+    .hp-head-top h3 { font-size:14px; font-weight:700; }
+    .hp-close { background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; border-radius:7px; width:28px; height:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; }
+    .hp-aset-nibar { font-size:13px; font-weight:700; color:var(--gold2); }
+    .hp-aset-info  { font-size:11px; color:rgba(255,255,255,0.6); }
+    .hp-body { flex:1; overflow-y:auto; padding:16px; }
+    .hp-body::-webkit-scrollbar { width:4px; }
+    .hp-body::-webkit-scrollbar-thumb { background:#d1d5db; border-radius:4px; }
+    .hp-loading { text-align:center; padding:32px; color:var(--muted); font-size:13px; }
+    .hp-empty { text-align:center; padding:48px 20px; color:var(--muted); }
+    .hp-empty-icon { font-size:48px; margin-bottom:12px; opacity:.4; }
+    .timeline { position:relative; padding-left:28px; }
+    .timeline::before { content:''; position:absolute; left:10px; top:0; bottom:0; width:2px; background:var(--border); }
+    .timeline-item { position:relative; margin-bottom:20px; }
+    .timeline-dot { position:absolute; left:-24px; top:4px; width:14px; height:14px; border-radius:50%; border:2px solid white; z-index:1; }
+    .timeline-dot.create   { background:var(--success); box-shadow:0 0 0 2px #bbf7d0; }
+    .timeline-dot.update   { background:var(--blue);    box-shadow:0 0 0 2px #bfdbfe; }
+    .timeline-dot.delete   { background:var(--danger);  box-shadow:0 0 0 2px #fecaca; }
+    .timeline-dot.rollback { background:var(--warning); box-shadow:0 0 0 2px #fde68a; }
+    .timeline-card { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
+    .timeline-card:hover { border-color:var(--blue); }
+    .tc-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:4px; }
+    .tc-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:100px; font-size:10px; font-weight:700; }
+    .tc-badge.create   { background:#dcfce7; color:#15803d; }
+    .tc-badge.update   { background:#dbeafe; color:#1d4ed8; }
+    .tc-badge.delete   { background:#fee2e2; color:#b91c1c; }
+    .tc-badge.rollback { background:#fef9c3; color:#a16207; }
+    .tc-badge.geom     { background:#f3e8ff; color:#7e22ce; }
+    .tc-badge.keduanya { background:#fce7f3; color:#be185d; }
+    .tc-time { font-size:10px; color:var(--muted); }
+    .tc-user { font-size:11px; color:var(--muted); margin-bottom:6px; }
+    .tc-user strong { color:var(--text); }
+    .tc-diff { margin-top:8px; }
+    .tc-diff-title { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; }
+    .diff-label { font-size:10px; font-weight:600; color:var(--muted); margin-top:6px; }
+    .diff-row { display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-top:2px; font-size:11px; }
+    .diff-old { background:#fef2f2; border:1px solid #fecaca; border-radius:5px; padding:4px 8px; color:#991b1b; text-decoration:line-through; word-break:break-word; }
+    .diff-new { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:5px; padding:4px 8px; color:#166534; word-break:break-word; }
+    .tc-map { height:160px; border-radius:7px; overflow:hidden; margin-top:6px; border:1px solid var(--border); }
+    .tc-map-wrap { margin-top:8px; }
+    .tc-map-legend { display:flex; gap:10px; margin-bottom:4px; font-size:10px; font-weight:600; }
+    .tc-map-leg.old { color:#ef4444; } .tc-map-leg.new { color:#16a34a; }
+    .tc-actions { margin-top:10px; display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+    .btn-rollback { padding:5px 12px; background:#fef9c3; border:1px solid #fde68a; color:#92400e; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; font-family:inherit; }
+    .btn-rollback:hover { background:#fde68a; }
+    .btn-restore { padding:5px 12px; background:#dcfce7; border:1px solid #bbf7d0; color:#15803d; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; font-family:inherit; }
+    .btn-restore:hover { background:#bbf7d0; }
+    .btn-del-history { padding:5px 9px; background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; border-radius:6px; font-size:11px; cursor:pointer; font-family:inherit; margin-left:auto; }
+    .btn-del-history:hover { background:#fecaca; }
+    @media (max-width:768px) { .history-panel { width:100%; } }
   </style>
 </head>
 <body>
-  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 <div class="admin-layout">
 
   <!-- SIDEBAR -->
@@ -295,6 +268,7 @@
         <div class="nav-group-label">Pengelolaan</div>
         <a href="validasi.html" class="sidebar-link"><i class="fa fa-circle-check"></i> Validasi Aset</a>
         <a href="ekspor.html"   class="sidebar-link"><i class="fa fa-file-excel"></i> Ekspor Laporan</a>
+        <a href="feedback-admin.html" class="sidebar-link"><i class="fa fa-star"></i> Kelola Feedback</a>
       </div>
       <div class="nav-group" data-admin-only>
         <div class="nav-group-label">Administrasi</div>
@@ -318,16 +292,13 @@
   <!-- MAIN -->
   <div class="main">
     <div class="topbar">
-      <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Menu">
-        <span></span><span></span><span></span>
-      </button>
-
       <div class="topbar-left">
         <h1>🗺 Aset Tanah — KIB A</h1>
         <p>Kelola data inventaris aset tanah Pemerintah Kabupaten Bojonegoro</p>
       </div>
       <div class="topbar-right">
         <button class="btn btn-outline" onclick="loadData()"><i class="fa fa-rotate"></i> Refresh</button>
+        <button class="btn btn-outline" onclick="openRiwayatTerhapus()" style="color:#7c3aed;border-color:#e9d5ff"><i class="fa fa-trash-can-arrow-up"></i> Aset Terhapus</button>
         <button class="btn btn-primary" onclick="openModal('tambah')"><i class="fa fa-plus"></i> Tambah Aset</button>
       </div>
     </div>
@@ -398,6 +369,35 @@
   </div>
 </div>
 
+
+<!-- MODAL ASET TERHAPUS -->
+<div class="modal-overlay" id="modal-terhapus">
+  <div class="modal" style="max-width:760px">
+    <div class="modal-header" style="background:var(--navy);color:white">
+      <h3 style="color:white">🗑 Aset Terhapus — Bisa Dipulihkan</h3>
+      <button class="modal-close" onclick="closeModal('modal-terhapus')" style="color:white">✕</button>
+    </div>
+    <div class="modal-body" id="terhapus-body" style="padding:0">
+      <div style="text-align:center;padding:32px;color:var(--muted)"><i class="fa fa-spinner fa-spin"></i> Memuat...</div>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY SIDE PANEL -->
+<div class="history-panel-overlay" id="hp-overlay" onclick="closeHistory()"></div>
+<div class="history-panel" id="history-panel">
+  <div class="hp-head">
+    <div class="hp-head-top">
+      <h3>&#128336; Riwayat Perubahan</h3>
+      <button class="hp-close" onclick="closeHistory()">&#10005;</button>
+    </div>
+    <div class="hp-aset-nibar" id="hp-nibar">&#8212;</div>
+    <div class="hp-aset-info"  id="hp-info">Memuat riwayat...</div>
+  </div>
+  <div class="hp-body" id="hp-body">
+    <div class="hp-loading"><i class="fa fa-spinner fa-spin"></i> Memuat...</div>
+  </div>
+</div>
 <!-- ══ MODAL TAMBAH / EDIT ══ -->
 <div class="modal-overlay" id="modal-form">
   <div class="modal">
@@ -460,19 +460,24 @@
             </select>
           </div>
 
-          <!-- Mini peta -->
+          <!-- Mini peta + Polygon Editor -->
           <div class="form-group span2">
-            <label>Koordinat (klik peta untuk memilih lokasi)</label>
-            <div class="map-wrap">
-              <div id="mini-map"></div>
-              <div class="map-hint">💡 Klik di peta untuk menentukan/mengubah koordinat aset</div>
-              <div class="coord-display">
-                <div class="coord-box" id="disp-lat">Lat: —</div>
-                <div class="coord-box" id="disp-lng">Lng: —</div>
-              </div>
+            <label>Geometri Polygon Bidang Tanah</label>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:8px;flex-wrap:wrap">
+              <span class="map-status" id="map-status">Memuat...</span>
+              <button type="button" class="map-tool-btn danger" id="btn-clear-polygon" onclick="clearPolygon()" style="display:none;padding:4px 10px;font-size:10px">🗑 Hapus Polygon</button>
             </div>
+            <div id="mini-map"></div>
+            <div class="map-hint" id="map-hint"></div>
+            <div class="map-hint" style="margin-top:2px">
+              <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#e8c96a;border:1.5px solid #c9a84c;display:inline-block;border-radius:2px"></span> Kecamatan aset</span>
+              &nbsp;&nbsp;
+              <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border:1.5px dashed #94a3b8;display:inline-block;border-radius:2px"></span> Kecamatan lain (referensi)</span>
+            </div>
+            <div class="geojson-info" id="geojson-info"></div>
             <input type="hidden" id="f-latitude"/>
             <input type="hidden" id="f-longitude"/>
+            <input type="hidden" id="f-geojson"/>
           </div>
 
           <div class="form-section">Data Tanah</div>
@@ -500,10 +505,6 @@
           <div class="form-group">
             <label>Tanggal Hak</label>
             <input type="date" class="form-control" id="f-tanggal_hak"/>
-          </div>
-          <div class="form-group">
-            <label>Nama Kepemilikan Dokumen</label>
-            <input type="text" class="form-control" id="f-nama_kepemilikan_d" placeholder="Nama di sertifikat..."/>
           </div>
 
           <div class="form-section">Perolehan</div>
@@ -558,6 +559,7 @@
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 <script src="/admin/js/admin.js"></script>
 <script>
   let currentPage = 1;
@@ -591,17 +593,36 @@
       `<tr class="loading-row"><td colspan="10"><i class="fa fa-spinner fa-spin"></i> Memuat...</td></tr>`;
 
     try {
-      const res  = await apiFetch(`/api/aset/tanah?${params}`);
+      const res  = await apiFetch('/api/aset/tanah?' + params);
       const data = await res.json();
       totalRows  = data.total;
       renderTable(data.data, page);
       renderPagination(data.total, page);
       document.getElementById('table-info').textContent =
-        `Total: ${fmtNum(data.total)} aset`;
+        'Total: ' + fmtNum(data.total) + ' aset';
+
+      // Cek geom berubah — SATU request bulk, bukan per baris
+      const ids = data.data.map(r => r.id_tanah);
+      loadGeomBadges(ids);
     } catch(e) {
       document.getElementById('table-body').innerHTML =
-        `<tr class="loading-row"><td colspan="10">Gagal memuat data.</td></tr>`;
+        '<tr class="loading-row"><td colspan="10">Gagal memuat data.</td></tr>';
     }
+  }
+
+  // Cek geom berubah via satu bulk query — tidak lambat
+  async function loadGeomBadges(ids) {
+    if (!ids.length) return;
+    try {
+      const res  = await apiFetch('/api/aset/history/geom-changed/kib_a?ids=' + ids.join(','));
+      if (!res || !res.ok) return;
+      const data = await res.json();
+      if (!Array.isArray(data)) return;
+      data.forEach(function(id) {
+        const badge = document.getElementById('geom-badge-' + id);
+        if (badge) badge.innerHTML = '<span class="geom-changed"><i class="fa fa-map-location-dot"></i> Geom berubah</span>';
+      });
+    } catch(e) {}
   }
 
   function debounceLoad() {
@@ -617,32 +638,44 @@
 
   // ── RENDER TABLE ──────────────────────────────────────
   function renderTable(rows, page) {
-    const tbody = document.getElementById('table-body');
+    var tbody = document.getElementById('table-body');
     if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><i class="fa fa-inbox"></i><p>Tidak ada data ditemukan.</p></div></td></tr>`;
+      tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state"><i class="fa fa-inbox"></i><p>Tidak ada data ditemukan.</p></div></td></tr>';
       return;
     }
-    const start = (page - 1) * PER_PAGE;
-    tbody.innerHTML = rows.map((r, i) => `
-      <tr>
-        <td>${start + i + 1}</td>
-        <td><div class="td-nibar" title="${r.nibar||''}">${r.nibar||'—'}</div></td>
-        <td><div class="td-opd" title="${r.opd||''}">${(r.opd||'—').replace('.xlsx','')}</div></td>
-        <td><div class="td-nama">${r.nama_barang||'—'}</div></td>
-        <td><div class="td-opd" title="${r.spesifikasi_lainnya||r.spesifikasi||''}">${r.spesifikasi_lainnya||r.spesifikasi||'—'}</div></td>
-        <td>${r.desa_kelurahan||'—'}</td>
-        <td>${r.kecamatan||'—'}</td>
-        <td class="td-luas">${fmtNum(r.luas_m2)} m²</td>
-        <td>${r.nama_hak||'—'}</td>
-        <td>
-          <div class="actions">
-            <button class="btn btn-outline btn-sm" onclick="openDetail(${r.id_tanah})" title="Detail"><i class="fa fa-eye"></i></button>
-            <button class="btn btn-outline btn-sm" onclick="openModal('edit', ${r.id_tanah})" title="Edit"><i class="fa fa-pen"></i></button>
-            <button class="btn btn-danger btn-sm" onclick="hapusAset(${r.id_tanah})" title="Hapus"><i class="fa fa-trash"></i></button>
-          </div>
-        </td>
-      </tr>
-    `).join('');
+    var start = (page - 1) * PER_PAGE;
+    tbody.innerHTML = rows.map(function(r, i) {
+      var nibar   = (r.nibar||'—');
+      var nibarSafe = nibar.replace(/'/g, '&#39;');
+      var opd     = (r.opd||'—').replace('.xlsx','');
+      var nama    = r.nama_barang||'—';
+      var spek    = r.spesifikasi_lainnya||r.spesifikasi||'—';
+      var desa    = r.desa_kelurahan||'—';
+      var kec     = r.kecamatan||'—';
+      var luas    = fmtNum(r.luas_m2) + ' m\u00B2';
+      var hak     = r.nama_hak||'—';
+      var id      = r.id_tanah;
+      return '<tr id="row-' + id + '">'
+        + '<td>' + (start+i+1) + '</td>'
+        + '<td>'
+        + '<div class="td-nibar">' + nibar + '</div>'
+        + '<span id="geom-badge-' + id + '"></span>'
+        + '</td>'
+        + '<td><div class="td-opd">' + opd + '</div></td>'
+        + '<td><div class="td-nama">' + nama + '</div></td>'
+        + '<td><div class="td-opd">' + spek + '</div></td>'
+        + '<td>' + desa + '</td>'
+        + '<td>' + kec + '</td>'
+        + '<td class="td-luas">' + luas + '</td>'
+        + '<td>' + hak + '</td>'
+        + '<td><div class="actions">'
+        + '<button class="btn btn-outline btn-sm" onclick="openDetail(' + id + ')" title="Detail"><i class="fa fa-eye"></i></button>'
+        + '<button class="btn btn-outline btn-sm" onclick="openHistory(\'tanah\',' + id + ',\'' + nibarSafe + '\')" title="Riwayat" style="color:#7c3aed;border-color:#e9d5ff"><i class="fa fa-clock-rotate-left"></i></button>'
+        + '<button class="btn btn-outline btn-sm" onclick="openModal(\'edit\',' + id + ')" title="Edit"><i class="fa fa-pen"></i></button>'
+        + '<button class="btn btn-danger btn-sm" onclick="hapusAset(' + id + ')" title="Hapus"><i class="fa fa-trash"></i></button>'
+        + '</div></td>'
+        + '</tr>';
+    }).join('');
   }
 
   // ── PAGINATION ────────────────────────────────────────
@@ -650,62 +683,227 @@
     const pages = Math.ceil(total / PER_PAGE);
     const start = (page - 1) * PER_PAGE + 1;
     const end   = Math.min(page * PER_PAGE, total);
-    document.getElementById('pag-info').textContent = `Menampilkan ${fmtNum(start)}–${fmtNum(end)} dari ${fmtNum(total)}`;
+    document.getElementById('pag-info').textContent = 'Menampilkan ' + fmtNum(start) + '\u2013' + fmtNum(end) + ' dari ' + fmtNum(total);
 
-    let html = `<button class="page-btn" onclick="loadData(${page-1})" ${page<=1?'disabled':''}>‹ Prev</button>`;
+    var html = '<button class="page-btn" onclick="loadData(' + (page-1) + ')" ' + (page<=1?'disabled':'') + '>‹ Prev</button>';
     for (let p = Math.max(1,page-2); p <= Math.min(pages, page+2); p++) {
-      html += `<button class="page-btn ${p===page?'active':''}" onclick="loadData(${p})">${p}</button>`;
+      html += '<button class="page-btn ' + (p===page?'active':'') + '" onclick="loadData(' + p + ')">' + p + '</button>';
     }
-    html += `<button class="page-btn" onclick="loadData(${page+1})" ${page>=pages?'disabled':''}>Next ›</button>`;
+    html += '<button class="page-btn" onclick="loadData(' + (page+1) + ')" ' + (page>=pages?'disabled':'') + '>Next ›</button>';
     document.getElementById('pag-btns').innerHTML = html;
   }
 
-  // ── MINI MAP ──────────────────────────────────────────
-  let polygonLayer = null;
+  // ── MINI MAP + EDITOR TITIK SUDUT CUSTOM + LAYER BATAS KECAMATAN ─────────────
+  let polygonLayer      = null;
+  let drawnItems        = null;
+  let currentGeojson    = null;
+  let wilayahLayer      = null;   // layer batas kecamatan (referensi visual, non-interaktif)
+  let wilayahGeoJSON    = null;   // cache data batas kecamatan
+  let vertexMarkerGroup = null;   // grup marker titik sudut polygon (custom, bisa diseret)
+  let refPointMarker    = null;   // marker titik merah bantu (untuk aset yang belum punya polygon)
+  let editRing          = null;   // array [lng,lat] titik sudut yang sedang diedit (tanpa duplikat penutup)
 
-  function initMiniMap(lat, lng, geojson) {
-    if (miniMap) { miniMap.remove(); miniMap = null; mapMarker = null; polygonLayer = null; }
-    const center = (lat && lng) ? [lat, lng] : [-7.18, 111.88];
-    const zoom   = (lat && lng) ? 15 : 10;
-    miniMap = L.map('mini-map').setView(center, zoom);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      { attribution:'© Esri', maxZoom:19 }).addTo(miniMap);
-
-    // Tampilkan polygon jika ada geojson
-    if (geojson) {
-      polygonLayer = L.geoJSON(geojson, {
-        style: { color:'#FFD700', weight:2.5, fillColor:'#1d6fa4', fillOpacity:0.4 }
-      }).addTo(miniMap);
-      miniMap.fitBounds(polygonLayer.getBounds(), { padding:[10,10] });
-      // Centroid marker
-      const bounds  = polygonLayer.getBounds();
-      const clat    = bounds.getCenter().lat;
-      const clng    = bounds.getCenter().lng;
-      mapMarker = L.circleMarker([clat, clng], {
-        radius:6, color:'#FFD700', weight:2, fillColor:'#fff', fillOpacity:1
-      }).addTo(miniMap).bindTooltip('Centroid polygon', {permanent:false});
-      updateCoord({ lat: clat, lng: clng });
-    } else if (lat && lng) {
-      mapMarker = L.marker([lat, lng], { draggable: true }).addTo(miniMap);
-      mapMarker.on('dragend', e => updateCoord(e.target.getLatLng()));
-      updateCoord({ lat, lng });
-    }
-
-    // Klik peta untuk set/pindah titik centroid manual
-    miniMap.on('click', e => {
-      const {lat, lng} = e.latlng;
-      if (mapMarker) miniMap.removeLayer(mapMarker);
-      mapMarker = L.marker([lat, lng], { draggable: true }).addTo(miniMap);
-      mapMarker.on('dragend', e2 => updateCoord(e2.target.getLatLng()));
-      updateCoord({ lat, lng });
-    });
+  // Ambil data batas kecamatan sekali saja, lalu simpan di cache
+  async function getWilayahGeoJSON() {
+    if (wilayahGeoJSON) return wilayahGeoJSON;
+    try {
+      const res = await apiFetch('/api/geojson/wilayah');
+      wilayahGeoJSON = await res.json();
+    } catch(e) { wilayahGeoJSON = null; }
+    return wilayahGeoJSON;
   }
 
+  // ── Helper konversi ring polygon (dipakai editor custom) ──
+  function ringToLatLngs(ring) { return ring.map(function(c){ return [c[1], c[0]]; }); }
+  function buildGeojsonFromRing(ring) {
+    var closed = ring.concat([ring[0]]);
+    return { type:'MultiPolygon', coordinates:[[ closed ]] };
+  }
+  function extractRing(geojson) {
+    try {
+      var ring = geojson.type === 'MultiPolygon' ? geojson.coordinates[0][0] : geojson.coordinates[0];
+      var r = ring.slice();
+      var first = r[0], last = r[r.length-1];
+      if (first[0] === last[0] && first[1] === last[1]) r = r.slice(0, -1);
+      return r.map(function(c){ return [c[0], c[1]]; });
+    } catch(e) { return []; }
+  }
+
+  // ── Render ulang polygon + marker titik sudut yang bisa diseret ──
+  function redrawEditablePolygon() {
+    if (polygonLayer) { try { drawnItems.removeLayer(polygonLayer); } catch(e){} }
+    if (vertexMarkerGroup) { try { miniMap.removeLayer(vertexMarkerGroup); } catch(e){} }
+    vertexMarkerGroup = L.layerGroup().addTo(miniMap);
+
+    var latlngs = ringToLatLngs(editRing);
+    polygonLayer = L.polygon(latlngs, {
+      color:'#FFD700', weight:2.5, fillColor:'#1d6fa4', fillOpacity:0.35, interactive:false
+    }).addTo(drawnItems);
+
+    editRing.forEach(function(pt, idx) {
+      var marker = L.marker([pt[1], pt[0]], {
+        draggable: true,
+        icon: L.divIcon({
+          className: 'vertex-marker-icon',
+          html: '<div style="width:16px;height:16px;background:#FFD700;border:2.5px solid #0f2c4a;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.45)"></div>',
+          iconSize:[16,16], iconAnchor:[8,8]
+        })
+      }).addTo(vertexMarkerGroup);
+
+      marker.on('drag', function(e) {
+        var ll = e.target.getLatLng();
+        editRing[idx] = [ll.lng, ll.lat];
+        polygonLayer.setLatLngs(ringToLatLngs(editRing));
+      });
+      marker.on('dragend', function() { finalizeEditRing(); });
+    });
+
+    finalizeEditRing();
+  }
+
+  function finalizeEditRing() {
+    var gj = buildGeojsonFromRing(editRing);
+    currentGeojson = gj;
+    setGeojsonField(gj);
+    updateGeomInfo(gj);
+    try {
+      var b = polygonLayer.getBounds();
+      updateCoord({ lat:b.getCenter().lat, lng:b.getCenter().lng });
+    } catch(e){}
+  }
+
+  // mode 'tambah' → auto aktif gambar polygon (jika belum ada geometri)
+  // mode 'edit'   → polygon existing langsung bisa diseret titik sudutnya (editor custom)
+  async function initMiniMap(lat, lng, geojson, kecamatanAset) {
+    if (miniMap) { try { miniMap.remove(); } catch(e){} miniMap = null; mapMarker = null; polygonLayer = null; drawnItems = null; wilayahLayer = null; vertexMarkerGroup = null; refPointMarker = null; editRing = null; }
+    currentGeojson = geojson || null;
+
+    miniMap = L.map('mini-map', { zoomControl:true }).setView([-7.18,111.88], 10);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      { attribution:'© Esri', maxZoom:20 }).addTo(miniMap);
+
+    // ── LAYER BATAS KECAMATAN (murni referensi visual — TIDAK interaktif) ──
+    if (!miniMap.getPane('wilayahPane')) {
+      miniMap.createPane('wilayahPane');
+      miniMap.getPane('wilayahPane').style.zIndex = 350;
+      miniMap.getPane('wilayahPane').style.pointerEvents = 'none';
+    }
+    const wilayahData = await getWilayahGeoJSON();
+    if (wilayahData) {
+      wilayahLayer = L.geoJSON(wilayahData, {
+        pane: 'wilayahPane',
+        interactive: false,
+        style: function(feature) {
+          const namaFitur = (feature.properties.nama_kecamatan || '').toUpperCase();
+          const isAsetKecamatan = kecamatanAset && namaFitur === kecamatanAset.toUpperCase();
+          return isAsetKecamatan
+            ? { color:'#e8c96a', weight:2.5, fillColor:'#e8c96a', fillOpacity:0.18 }
+            : { color:'#94a3b8', weight:1, fillColor:'transparent', fillOpacity:0, dashArray:'4 3' };
+        }
+      }).addTo(miniMap);
+    }
+
+    drawnItems = new L.FeatureGroup().addTo(miniMap);
+
+    // Event selesai gambar polygon baru (untuk kasus belum ada geometri)
+    miniMap.on(L.Draw.Event.CREATED, function(e) {
+      if (refPointMarker) { try { miniMap.removeLayer(refPointMarker); } catch(err){} refPointMarker = null; }
+      drawnItems.clearLayers();
+      var gj = e.layer.toGeoJSON().geometry;
+      if (gj.type === 'Polygon') gj = { type:'MultiPolygon', coordinates:[gj.coordinates] };
+      editRing = extractRing(gj);
+      redrawEditablePolygon();   // langsung tampilkan sebagai polygon dengan titik sudut yang bisa diseret
+      setMapStatus('Polygon berhasil digambar — seret titik sudut kuning untuk menyempurnakan bentuk', 'ok');
+      document.getElementById('btn-clear-polygon').style.display = '';
+    });
+
+    if (geojson) {
+      // ── MODE EDIT dengan geometri sudah ada — render sebagai editor titik sudut custom ──
+      editRing = extractRing(geojson);
+      redrawEditablePolygon();
+      try { miniMap.fitBounds(polygonLayer.getBounds(), { padding:[30,30] }); } catch(e){}
+      document.getElementById('btn-clear-polygon').style.display = '';
+      setMapStatus('Seret titik-titik sudut (lingkaran kuning) untuk mengubah bentuk polygon — perubahan otomatis tersimpan ke form', 'ok');
+
+    } else {
+      // ── Belum ada geometri — beri PENANDA TITIK MERAH yang bisa digeser sebagai acuan awal ──
+      var startCenter = miniMap.getCenter();
+      if (lat && lng) {
+        startCenter = L.latLng(lat, lng);
+        miniMap.setView(startCenter, 16);
+      } else if (kecamatanAset && wilayahLayer) {
+        try {
+          const matchLayer = wilayahLayer.getLayers().find(function(l) {
+            return (l.feature.properties.nama_kecamatan || '').toUpperCase() === kecamatanAset.toUpperCase();
+          });
+          if (matchLayer) {
+            miniMap.fitBounds(matchLayer.getBounds(), { padding:[20,20] });
+            startCenter = matchLayer.getBounds().getCenter();
+          }
+        } catch(e){}
+      }
+      document.getElementById('btn-clear-polygon').style.display = 'none';
+
+      refPointMarker = L.marker(startCenter, {
+        draggable: true,
+        icon: L.divIcon({
+          className: 'ref-point-icon',
+          html: '<div style="width:18px;height:18px;background:#dc2626;border:3px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.5)"></div>',
+          iconSize:[18,18], iconAnchor:[9,9]
+        })
+      }).addTo(drawnItems).bindTooltip('Geser ke lokasi perkiraan bidang tanah, lalu gambar polygon di sekitarnya', { direction:'top' });
+
+      setTimeout(function() {
+        new L.Draw.Polygon(miniMap, {
+          shapeOptions: { color:'#FFD700', weight:2.5, fillColor:'#1d6fa4', fillOpacity:0.35 },
+          showArea:true, metric:true
+        }).enable();
+        setMapStatus('Belum ada polygon — geser titik merah ke lokasi tanah, lalu gambar batas bidang di sekitarnya', '');
+        var hint = document.getElementById('map-hint');
+        if (hint) hint.innerHTML = '💡 <b>Geser titik merah</b> ke lokasi perkiraan bidang tanah sebagai acuan. Lalu <b>klik</b> di peta untuk menambah titik batas polygon. Klik <b>titik pertama (kuning)</b> untuk menutup polygon. Tekan <b>ESC</b> untuk batal.';
+      }, 300);
+    }
+  }
+
+  function clearPolygon() {
+    if (!confirm('Hapus polygon bidang tanah ini?')) return;
+    if (vertexMarkerGroup) { try { miniMap.removeLayer(vertexMarkerGroup); } catch(e){} vertexMarkerGroup = null; }
+    if (polygonLayer) { try { drawnItems.removeLayer(polygonLayer); } catch(e){} polygonLayer = null; }
+    if (drawnItems)   drawnItems.clearLayers();
+    editRing = null;
+    currentGeojson = null;
+    document.getElementById('f-geojson').value = '';
+    document.getElementById('f-latitude').value = '';
+    document.getElementById('f-longitude').value = '';
+    document.getElementById('geojson-info').textContent = '';
+    document.getElementById('btn-clear-polygon').style.display = 'none';
+    setMapStatus('Polygon dihapus — klik peta untuk gambar polygon baru', 'err');
+    setTimeout(function() {
+      new L.Draw.Polygon(miniMap, {
+        shapeOptions: { color:'#FFD700', weight:2.5, fillColor:'#1d6fa4', fillOpacity:0.35 },
+        showArea:true, metric:true
+      }).enable();
+    }, 200);
+  }
+
+
+  function setGeojsonField(gj) { document.getElementById('f-geojson').value = gj ? JSON.stringify(gj) : ''; }
+  function updateGeomInfo(gj) {
+    var info = document.getElementById('geojson-info');
+    if (!info || !gj) return;
+    var n = 0;
+    try { n = gj.type==='MultiPolygon' ? gj.coordinates[0][0].length-1 : gj.coordinates[0].length-1; } catch(e){}
+    info.textContent = 'Tipe: ' + gj.type + ' | Jumlah titik: ' + n;
+  }
+  function setMapStatus(msg, cls) {
+    var el = document.getElementById('map-status');
+    if (!el) return;
+    el.textContent = msg;
+    el.className = 'map-status' + (cls?' '+cls:'');
+  }
   function updateCoord(latlng) {
     document.getElementById('f-latitude').value  = latlng.lat.toFixed(8);
     document.getElementById('f-longitude').value = latlng.lng.toFixed(8);
-    document.getElementById('disp-lat').textContent = `Lat: ${latlng.lat.toFixed(6)}`;
-    document.getElementById('disp-lng').textContent = `Lng: ${latlng.lng.toFixed(6)}`;
   }
 
   // ── MODAL TAMBAH / EDIT ───────────────────────────────
@@ -719,7 +917,7 @@
     // Inisialisasi peta setelah modal terbuka
     setTimeout(() => {
       if (mode === 'tambah') {
-        initMiniMap(null, null);
+        initMiniMap(null, null, null, null);
       } else {
         loadForEdit(id);
       }
@@ -734,19 +932,19 @@
   function clearForm() {
     const fields = ['id','nibar','nomor_register','opd','nama_barang','spesifikasi',
       'spesifikasi_lainnya','alamat','desa_kelurahan','luas_m2','satuan',
-      'nama_hak','nomor_hak','tanggal_hak','nama_kepemilikan_d','nilai_perolehan',
+      'nama_hak','nomor_hak','tanggal_hak','nilai_perolehan',
       'cara_perolehan','tanggal_perolehan','status_penggunaan','keterangan',
-      'latitude','longitude'];
+      'latitude','longitude','geojson'];
+    currentGeojson = null;
     fields.forEach(f => { const el = document.getElementById('f-' + f); if (el) el.value = ''; });
     document.getElementById('f-satuan').value = 'Meter Persegi';
     document.getElementById('f-kecamatan-form').value = '';
-    document.getElementById('disp-lat').textContent = 'Lat: —';
-    document.getElementById('disp-lng').textContent = 'Lng: —';
+    var gi = document.getElementById('geojson-info'); if(gi) gi.textContent='';
   }
 
   async function loadForEdit(id) {
     try {
-      const res  = await apiFetch(`/api/aset/tanah/${id}`);
+      const res  = await apiFetch('/api/aset/tanah/' + id);
       const data = await res.json();
       document.getElementById('f-id').value                = data.id_tanah;
       document.getElementById('f-nibar').value             = data.nibar||'';
@@ -763,7 +961,6 @@
       document.getElementById('f-nama_hak').value          = data.nama_hak||'';
       document.getElementById('f-nomor_hak').value         = data.nomor_hak||'';
       document.getElementById('f-tanggal_hak').value       = data.tanggal_hak ? data.tanggal_hak.slice(0,10) : '';
-      document.getElementById('f-nama_kepemilikan_d').value = data.nama_kepemilikan_dokumen||'';
       document.getElementById('f-nilai_perolehan').value   = data.nilai_perolehan||'';
       document.getElementById('f-cara_perolehan').value    = data.cara_perolehan||'';
       document.getElementById('f-tanggal_perolehan').value = data.tanggal_perolehan ? data.tanggal_perolehan.slice(0,10) : '';
@@ -773,13 +970,20 @@
       const lat = data.latitude  || null;
       const lng = data.longitude || null;
       const geo = data.geometry  || null;
-      initMiniMap(lat, lng, geo);
+      initMiniMap(lat, lng, geo, data.kecamatan);   // ← kirim kecamatan aset untuk layer referensi
       if (lat && lng) {
         document.getElementById('f-latitude').value  = lat;
         document.getElementById('f-longitude').value = lng;
       }
     } catch(e) { showToast('Gagal memuat data aset.', 'error'); }
   }
+
+  // Saat mode Tambah, jika user pilih Kecamatan di dropdown, peta otomatis zoom & highlight ke kecamatan itu
+  document.getElementById('f-kecamatan-form').addEventListener('change', function() {
+    if (currentMode === 'tambah' && miniMap) {
+      initMiniMap(null, null, null, this.value);
+    }
+  });
 
   // ── SUBMIT FORM ───────────────────────────────────────
   async function submitForm(e) {
@@ -806,7 +1010,6 @@
       nama_hak:                 document.getElementById('f-nama_hak').value,
       nomor_hak:                document.getElementById('f-nomor_hak').value,
       tanggal_hak:              document.getElementById('f-tanggal_hak').value || null,
-      nama_kepemilikan_dokumen: document.getElementById('f-nama_kepemilikan_d').value,
       nilai_perolehan:          document.getElementById('f-nilai_perolehan').value || null,
       cara_perolehan:           document.getElementById('f-cara_perolehan').value,
       tanggal_perolehan:        document.getElementById('f-tanggal_perolehan').value || null,
@@ -816,13 +1019,17 @@
       longitude: lng ? parseFloat(lng) : null,
     };
 
-    // Tambah geojson jika ada koordinat
-    if (lat && lng) {
-      payload.geojson = { type:'Point', coordinates:[parseFloat(lng), parseFloat(lat)] };
+    // Username
+    payload.username = getUser().username || getUser().nama_lengkap || 'admin';
+
+    // Kirim geojson polygon dari editor
+    var gjEl = document.getElementById('f-geojson');
+    if (gjEl && gjEl.value) {
+      try { payload.geojson = JSON.parse(gjEl.value); } catch(e){}
     }
 
     try {
-      const url    = currentMode === 'tambah' ? '/api/aset/tanah' : `/api/aset/tanah/${id}`;
+      const url    = currentMode === 'tambah' ? '/api/aset/tanah' : '/api/aset/tanah/' + id;
       const method = currentMode === 'tambah' ? 'POST' : 'PUT';
       const res    = await apiFetch(url, { method, body: JSON.stringify(payload) });
       const data   = await res.json();
@@ -842,7 +1049,7 @@
     document.getElementById('modal-detail').classList.add('open');
     document.getElementById('detail-body').innerHTML = '<div style="text-align:center;padding:24px"><i class="fa fa-spinner fa-spin"></i> Memuat...</div>';
     try {
-      const res  = await apiFetch(`/api/aset/tanah/${id}`);
+      const res  = await apiFetch('/api/aset/tanah/' + id);
       const d    = await res.json();
       document.getElementById('detail-body').innerHTML = `
         <table style="width:100%;font-size:12px;border-collapse:collapse">
@@ -853,7 +1060,7 @@
           ${row('Nama Hak', d.nama_hak)} ${row('Nomor Hak', d.nomor_hak)} ${row('Tanggal Hak', fmtDate(d.tanggal_hak))}
           ${row('Nilai Perolehan', fmtRp(d.nilai_perolehan))} ${row('Cara Perolehan', d.cara_perolehan)}
           ${row('Tanggal Perolehan', fmtDate(d.tanggal_perolehan))} ${row('Status Penggunaan', d.status_penggunaan)}
-          ${row('Koordinat', d.latitude ? `${d.latitude}, ${d.longitude}` : '—')}
+          ${row('Koordinat', d.latitude ? (d.latitude + ', ' + d.longitude) : '—')}
           ${row('Keterangan', d.keterangan)}
         </table>`;
     } catch(e) { document.getElementById('detail-body').innerHTML = 'Gagal memuat detail.'; }
@@ -870,26 +1077,202 @@
   async function hapusAset(id) {
     if (!confirmDelete()) return;
     try {
-      const res = await apiFetch(`/api/aset/tanah/${id}`, { method:'DELETE' });
+      const user = getUser();
+      const res = await apiFetch('/api/aset/tanah/' + id, { method:'DELETE', body:JSON.stringify({username: user.username||user.nama_lengkap||'admin'}) });
       if (!res.ok) throw new Error('Gagal menghapus.');
-      showToast('Aset berhasil dihapus.', 'warning');
+      showToast('Aset berhasil dihapus. Buka Aset Terhapus untuk memulihkan.', 'warning');
       loadData(currentPage);
     } catch(e) { showToast(e.message, 'error'); }
   }
 </script>
-  <script>
-  function toggleSidebar() {
-    document.querySelector('.sidebar').classList.toggle('open');
-    document.getElementById('sidebar-overlay').classList.toggle('show');
+
+<script>
+// ══ HISTORY + RESTORE + HAPUS RIWAYAT ════════════════════════════════════════
+var historyMaps = {};
+var currentHistoryId = null, currentHistoryType = null;
+
+async function openHistory(type, id, label) {
+  currentHistoryType = type; currentHistoryId = id;
+  document.getElementById('hp-nibar').textContent = decodeURIComponent(String(label||id));
+  document.getElementById('hp-info').textContent  = 'Memuat...';
+  document.getElementById('hp-body').innerHTML    = '<div class="hp-loading"><i class="fa fa-spinner fa-spin"></i></div>';
+  document.getElementById('history-panel').classList.add('open');
+  document.getElementById('hp-overlay').classList.add('show');
+  Object.values(historyMaps).forEach(function(m){try{m.remove();}catch(e){}});
+  historyMaps = {};
+  await renderHistory();
+}
+
+async function renderHistory() {
+  try {
+    const url = currentHistoryType==='tanah'
+      ? '/api/aset/history/tanah/'+currentHistoryId
+      : '/api/aset/history/bangunan/'+encodeURIComponent(currentHistoryId);
+    const res = await apiFetch(url);
+    const data = await res.json();
+    document.getElementById('hp-info').textContent = data.length + ' riwayat';
+    if (!data.length) {
+      document.getElementById('hp-body').innerHTML='<div class="hp-empty"><div class="hp-empty-icon">📋</div><p>Belum ada riwayat.</p></div>';
+      return;
+    }
+    document.getElementById('hp-body').innerHTML =
+      '<div style="display:flex;justify-content:flex-end;margin-bottom:12px">'
+      +'<button onclick="hapusSemuaHistory()" style="padding:5px 12px;background:#fee2e2;border:1px solid #fecaca;color:#b91c1c;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">🗑 Hapus Semua</button>'
+      +'</div><div class="timeline" id="hp-timeline"></div>';
+    const tl = document.getElementById('hp-timeline');
+    Object.values(historyMaps).forEach(function(m){try{m.remove();}catch(e){}});
+    historyMaps = {};
+    data.forEach(function(h,idx){
+      const aksi=(h.aksi||'update').toLowerCase();
+      const jenis=(h.jenis_perubahan||'').toLowerCase();
+      const waktu=new Date(h.diubah_pada).toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      const isRollback=(h.diubah_oleh||'').includes('rollback');
+      const isRestore=(h.diubah_oleh||'').includes('restore');
+      let bMain=isRestore?'<span class="tc-badge create">🔄 Dipulihkan</span>':isRollback?'<span class="tc-badge rollback">↩ Rollback</span>':aksi==='create'?'<span class="tc-badge create">✅ Dibuat</span>':aksi==='delete'?'<span class="tc-badge delete">🗑 Dihapus</span>':'<span class="tc-badge update">✏ Diperbarui</span>';
+      let bJenis=jenis==='geometri'?'<span class="tc-badge geom">🗺 Geometri</span>':jenis==='keduanya'?'<span class="tc-badge keduanya">🔀 Geom+Atribut</span>':jenis==='atribut'&&aksi==='update'?'<span class="tc-badge update" style="background:#f0fdf4;color:#15803d">📝 Atribut</span>':'';
+      let diff='';
+      const skip=['geom','geometry','created_at','updated_at','geom_json','row_id','latitude','longitude'];
+      if(h.field_berubah&&h.field_berubah.length&&h.data_lama&&h.data_baru){
+        const fields=h.field_berubah.filter(function(f){return!skip.includes(f);}).slice(0,8);
+        if(fields.length){
+          diff='<div class="tc-diff"><div class="tc-diff-title">Field berubah ('+fields.length+')</div>';
+          fields.forEach(function(f){
+            diff+='<div class="diff-label">'+f+'</div><div class="diff-row"><div class="diff-old">'+String(h.data_lama[f]??'—').substring(0,50)+'</div><div class="diff-new">'+String(h.data_baru[f]??'—').substring(0,50)+'</div></div>';
+          });
+          diff+='</div>';
+        }
+      }
+      const hasGeom=h.geom_lama||h.geom_baru;
+      const mapId='hmap-'+h.id;
+      const mapHtml=hasGeom?'<div class="tc-map-wrap"><div class="tc-map-legend">'+(h.geom_lama?'<span class="tc-map-leg old">⬤ Lama</span>':'')+(h.geom_baru&&JSON.stringify(h.geom_lama)!==JSON.stringify(h.geom_baru)?'<span class="tc-map-leg new">⬤ Baru</span>':'')+'</div><div class="tc-map" id="'+mapId+'"></div></div>':'';
+      let acts='<div class="tc-actions">';
+      if(aksi==='update'&&h.data_lama&&!isRollback) acts+='<button class="btn-rollback" onclick="doRollback('+h.id+')">↩ Rollback</button>';
+      if(aksi==='delete'&&h.data_lama) acts+='<button class="btn-restore" onclick="doRestore('+h.id+')">🔄 Pulihkan</button>';
+      acts+='<button class="btn-del-history" onclick="hapusHistoryItem('+h.id+')">🗑</button></div>';
+      const dotCls=isRestore?'create':isRollback?'rollback':aksi;
+      const item=document.createElement('div');
+      item.className='timeline-item'; item.id='hist-item-'+h.id;
+      item.innerHTML='<div class="timeline-dot '+dotCls+'"></div><div class="timeline-card"><div class="tc-header"><div style="display:flex;gap:4px;flex-wrap:wrap">'+bMain+bJenis+'</div><div class="tc-time">'+waktu+'</div></div><div class="tc-user">Oleh: <strong>'+(h.diubah_oleh||'—')+'</strong></div>'+diff+mapHtml+acts+'</div>';
+      tl.appendChild(item);
+      if(hasGeom) setTimeout(function(){renderHistoryMap(mapId,h.geom_lama,h.geom_baru);},150+idx*80);
+    });
+  } catch(e) {
+    document.getElementById('hp-body').innerHTML='<div class="hp-loading" style="color:var(--danger)">Gagal: '+e.message+'</div>';
   }
-  function closeSidebar() {
-    document.querySelector('.sidebar').classList.remove('open');
-    document.getElementById('sidebar-overlay').classList.remove('show');
-  }
-  // Tutup sidebar saat klik link (mobile)
-  document.querySelectorAll('.sidebar-link').forEach(link => {
-    link.addEventListener('click', closeSidebar);
-  });
+}
+
+function renderHistoryMap(mapId,geomLama,geomBaru){
+  var el=document.getElementById(mapId); if(!el||historyMaps[mapId]) return;
+  try {
+    var m=L.map(mapId,{zoomControl:false,attributionControl:false,scrollWheelZoom:true});
+    historyMaps[mapId]=m;
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19}).addTo(m);
+    var bounds=null;
+    if(geomLama){var l1=L.geoJSON(geomLama,{style:{color:'#ef4444',weight:2.5,fillColor:'#ef4444',fillOpacity:0.2,dashArray:'6 4'},pointToLayer:function(f,ll){return L.circleMarker(ll,{radius:9,color:'#ef4444',fillColor:'#ef4444',fillOpacity:0.75,weight:2.5});}}).addTo(m).bindTooltip('<b>Lama</b>',{sticky:true});try{bounds=l1.getBounds();}catch(e){}}
+    var gberubah=JSON.stringify(geomLama)!==JSON.stringify(geomBaru);
+    if(geomBaru&&gberubah){var l2=L.geoJSON(geomBaru,{style:{color:'#16a34a',weight:2.5,fillColor:'#16a34a',fillOpacity:0.2},pointToLayer:function(f,ll){return L.circleMarker(ll,{radius:9,color:'#16a34a',fillColor:'#16a34a',fillOpacity:0.75,weight:2.5});}}).addTo(m).bindTooltip('<b>Baru</b>',{sticky:true});try{var b2=l2.getBounds();bounds=bounds?bounds.extend(b2):b2;}catch(e){}}
+    else if(geomBaru&&!gberubah){L.geoJSON(geomBaru,{style:{color:'#1d6fa4',weight:2,fillColor:'#1d6fa4',fillOpacity:0.25}}).addTo(m);}
+    setTimeout(function(){m.invalidateSize();if(bounds&&bounds.isValid())m.fitBounds(bounds,{padding:[14,14],maxZoom:17});else m.setView([-7.18,111.88],10);},150);
+  } catch(e){console.error(e);}
+}
+
+function closeHistory(){
+  document.getElementById('history-panel').classList.remove('open');
+  document.getElementById('hp-overlay').classList.remove('show');
+  Object.values(historyMaps).forEach(function(m){try{m.remove();}catch(e){}});
+  historyMaps={};
+}
+
+async function doRollback(historyId){
+  if(!confirm('Rollback ke versi ini?')) return;
+  try{
+    const user=getUser();
+    const res=await apiFetch('/api/aset/history/rollback/'+historyId,{method:'POST',body:JSON.stringify({username:user.username||user.nama_lengkap||'admin'})});
+    const data=await res.json(); if(!res.ok) throw new Error(data.error);
+    showToast('✅ Rollback berhasil!');
+    Object.values(historyMaps).forEach(function(m){try{m.remove();}catch(e){}});historyMaps={};
+    await renderHistory(); loadData(currentPage);
+  }catch(e){showToast('Gagal: '+e.message,'error');}
+}
+
+async function doRestore(historyId){
+  if(!confirm('Pulihkan aset ini?')) return;
+  try{
+    const user=getUser();
+    const res=await apiFetch('/api/aset/history/restore/'+historyId,{method:'POST',body:JSON.stringify({username:user.username||user.nama_lengkap||'admin'})});
+    const data=await res.json(); if(!res.ok) throw new Error(data.error);
+    showToast('✅ Aset dipulihkan!');
+    Object.values(historyMaps).forEach(function(m){try{m.remove();}catch(e){}});historyMaps={};
+    await renderHistory(); loadData(currentPage);
+  }catch(e){showToast('Gagal: '+e.message,'error');}
+}
+
+async function hapusHistoryItem(historyId){
+  if(!confirm('Hapus riwayat ini?')) return;
+  try{
+    const res=await apiFetch('/api/aset/history/'+historyId,{method:'DELETE'});
+    const data=await res.json(); if(!res.ok) throw new Error(data.error);
+    showToast('Riwayat dihapus.','warning');
+    var el=document.getElementById('hist-item-'+historyId); if(el) el.remove();
+    var tl=document.getElementById('hp-timeline');
+    if(tl){var sisa=tl.querySelectorAll('.timeline-item').length;document.getElementById('hp-info').textContent=sisa+' riwayat';
+      if(!sisa) document.getElementById('hp-body').innerHTML='<div class="hp-empty"><div class="hp-empty-icon">📋</div><p>Belum ada riwayat.</p></div>';}
+  }catch(e){showToast('Gagal: '+e.message,'error');}
+}
+
+async function hapusSemuaHistory(){
+  if(!confirm('Hapus SEMUA riwayat aset ini?')) return;
+  try{
+    const tbl=currentHistoryType==='tanah'?'kib_a':'kib_c';
+    const res=await apiFetch('/api/aset/history/clear/'+tbl+'/'+encodeURIComponent(currentHistoryId),{method:'DELETE'});
+    const data=await res.json(); if(!res.ok) throw new Error(data.error);
+    showToast('Semua riwayat dihapus.','warning');
+    document.getElementById('hp-info').textContent='0 riwayat';
+    document.getElementById('hp-body').innerHTML='<div class="hp-empty"><div class="hp-empty-icon">📋</div><p>Belum ada riwayat.</p></div>';
+  }catch(e){showToast('Gagal: '+e.message,'error');}
+}
+
+async function openRiwayatTerhapus(){
+  document.getElementById('modal-terhapus').classList.add('open');
+  document.getElementById('terhapus-body').innerHTML='<div style="text-align:center;padding:32px;color:var(--muted)"><i class="fa fa-spinner fa-spin"></i> Memuat...</div>';
+  try{
+    const res=await apiFetch('/api/aset/history/deleted/kib_a');
+    const data=await res.json();
+    if(!data.length){document.getElementById('terhapus-body').innerHTML='<div style="text-align:center;padding:48px;color:var(--muted)">Tidak ada aset terhapus.</div>';return;}
+    document.getElementById('terhapus-body').innerHTML=
+      '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:var(--bg)">'
+      +'<th style="padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)">NIBAR</th>'
+      +'<th style="padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)">Nama Barang</th>'
+      +'<th style="padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)">Kecamatan</th>'
+      +'<th style="padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)">Dihapus</th>'
+      +'<th style="padding:10px 14px;border-bottom:1px solid var(--border)">Aksi</th>'
+      +'</tr></thead><tbody>'
+      +data.map(function(h){
+        const d=h.data_lama||{};
+        const w=new Date(h.diubah_pada).toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric'});
+        return '<tr style="border-bottom:1px solid #f3f4f6">'
+          +'<td style="padding:10px 14px;font-family:monospace;font-size:10px;color:var(--muted)">'+(d.nibar||h.aset_id)+'</td>'
+          +'<td style="padding:10px 14px;font-weight:600">'+(d.nama_barang||'—')+'</td>'
+          +'<td style="padding:10px 14px">'+(d.kecamatan||'—')+'</td>'
+          +'<td style="padding:10px 14px;white-space:nowrap">'+w+'</td>'
+          +'<td style="padding:10px 14px"><button onclick="restoreFromModal('+h.id+')" style="padding:5px 12px;background:#dcfce7;border:1px solid #bbf7d0;color:#15803d;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">🔄 Pulihkan</button></td>'
+          +'</tr>';
+      }).join('')
+      +'</tbody></table>';
+  }catch(e){document.getElementById('terhapus-body').innerHTML='<div style="text-align:center;padding:32px;color:var(--danger)">Gagal: '+e.message+'</div>';}
+}
+
+async function restoreFromModal(historyId){
+  if(!confirm('Pulihkan aset ke database?')) return;
+  try{
+    const user=getUser();
+    const res=await apiFetch('/api/aset/history/restore/'+historyId,{method:'POST',body:JSON.stringify({username:user.username||user.nama_lengkap||'admin'})});
+    const data=await res.json(); if(!res.ok) throw new Error(data.error);
+    showToast('✅ Aset berhasil dipulihkan!');
+    closeModal('modal-terhapus'); loadData(currentPage);
+  }catch(e){showToast('Gagal: '+e.message,'error');}
+}
 </script>
+
 </body>
 </html>

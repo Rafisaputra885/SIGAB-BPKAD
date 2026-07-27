@@ -115,7 +115,7 @@
     .content { flex: 1; overflow-y: auto; padding: 24px 28px; }
 
     /* ── STAT CARDS ── */
-    .stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 16px; margin-bottom: 24px; }
     .stat-card {
       background: white; border: 1px solid var(--border);
       border-radius: 12px; padding: 20px 22px;
@@ -212,7 +212,7 @@
     .act-text span { color: var(--muted); font-size: 11px; display: block; margin-top: 2px; }
 
     /* Shortcut buttons */
-    .shortcut-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 24px; }
+    .shortcut-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 24px; }
     .shortcut-btn {
       background: white; border: 1.5px solid var(--border); border-radius: 10px;
       padding: 14px 16px; text-decoration: none; color: var(--text);
@@ -221,111 +221,9 @@
     }
     .shortcut-btn:hover { border-color: var(--blue); color: var(--blue); background: #eff6ff; }
     .shortcut-btn i { color: var(--blue); font-size: 16px; width: 20px; }
-
-    /* ══ HAMBURGER BUTTON ══ */
-    .hamburger {
-      display: none; flex-direction: column; gap: 5px;
-      background: none; border: none; cursor: pointer; padding: 6px;
-      flex-shrink: 0;
-    }
-    .hamburger span {
-      display: block; width: 20px; height: 2px;
-      background: var(--navy); border-radius: 2px; transition: all .3s;
-    }
-
-    /* ══ SIDEBAR OVERLAY ══ */
-    .sidebar-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.5); z-index: 998;
-    }
-    .sidebar-overlay.show { display: block; }
-
-    @media (max-width: 768px) {
-      /* Layout */
-      .admin-layout { flex-direction: column; }
-
-      /* Sidebar jadi drawer dari kiri */
-      .sidebar {
-        position: fixed; top: 0; left: 0; bottom: 0;
-        width: 240px; z-index: 999;
-        transform: translateX(-100%);
-        transition: transform .3s ease;
-      }
-      .sidebar.open { transform: translateX(0); }
-
-      /* Hamburger tampil */
-      .hamburger { display: flex; }
-
-      /* Main tidak overflow */
-      .main { height: 100vh; overflow: hidden; }
-
-      /* Topbar */
-      .topbar { padding: 0 16px; gap: 10px; }
-      .topbar-left h1 { font-size: 13px; }
-      .topbar-left p  { display: none; }
-      .topbar-right   { gap: 8px; }
-
-      /* Content area */
-      .content { padding: 16px; }
-
-      /* Grid 2 kolom → 1 kolom */
-      .stats-grid,
-      .ekspor-grid,
-      .data-grid,
-      .user-grid { grid-template-columns: 1fr !important; }
-
-      /* Tabel scroll horizontal */
-      .table-wrap,
-      .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-      table { min-width: 600px; }
-
-      /* Card padding lebih kecil */
-      .ekspor-card,
-      .card,
-      .stat-card { padding: 18px !important; }
-
-      /* Form full width */
-      .form-row,
-      .filter-bar { flex-direction: column; gap: 8px; }
-      .form-row .form-control,
-      .filter-bar .form-control,
-      .filter-bar select,
-      .filter-bar input { width: 100%; }
-
-      /* Button full width di mobile */
-      .btn-row { flex-direction: column; }
-      .btn-row .btn { width: 100%; justify-content: center; }
-
-      /* Modal full screen */
-      .modal-box {
-        width: 95vw !important;
-        max-height: 90vh !important;
-        overflow-y: auto;
-        margin: 0 auto;
-      }
-
-      /* Map container */
-      .mini-map { height: 200px !important; }
-
-      /* Tabs scroll */
-      .tab-bar { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-      .tab-btn { white-space: nowrap; flex-shrink: 0; }
-
-      /* Validasi cards */
-      .val-grid { grid-template-columns: 1fr !important; }
-    }
-
-    @media (max-width: 480px) {
-      .content { padding: 12px; }
-      .topbar  { padding: 0 12px; }
-      .topbar-left h1 { font-size: 12px; }
-      table { min-width: 500px; font-size: 11px; }
-      .modal-box { width: 98vw !important; padding: 16px !important; }
-    }
   </style>
 </head>
 <body>
-  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 <div class="admin-layout">
 
   <!-- SIDEBAR -->
@@ -349,8 +247,9 @@
       </div>
       <div class="nav-group">
         <div class="nav-group-label">Pengelolaan</div>
-        <a href="validasi.html"  class="sidebar-link"><i class="fa fa-circle-check"></i> Validasi Aset <span class="badge-count" id="badge-validasi">—</span></a>
-        <a href="ekspor.html"    class="sidebar-link"><i class="fa fa-file-excel"></i> Ekspor Laporan</a>
+        <a href="validasi.html"       class="sidebar-link"><i class="fa fa-circle-check"></i> Validasi Aset <span class="badge-count" id="badge-validasi">—</span></a>
+        <a href="ekspor.html"         class="sidebar-link"><i class="fa fa-file-excel"></i> Ekspor Laporan</a>
+        <a href="feedback-admin.html" class="sidebar-link"><i class="fa fa-star"></i> Kelola Feedback <span class="badge-count" id="badge-feedback" style="background:#c9a84c;color:#0f2c4a">—</span></a>
       </div>
       <div class="nav-group" data-admin-only>
         <div class="nav-group-label">Administrasi</div>
@@ -380,10 +279,6 @@
   <!-- MAIN -->
   <div class="main">
     <div class="topbar">
-      <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Menu">
-        <span></span><span></span><span></span>
-      </button>
-
       <div class="topbar-left">
         <h1>Dashboard Admin</h1>
         <p>Selamat datang, <span id="topbar-name">—</span></p>
@@ -426,6 +321,13 @@
             <div class="stat-lbl">Perlu Validasi</div>
           </div>
         </div>
+        <div class="stat-card" style="cursor:pointer" onclick="location.href='feedback-admin.html'">
+          <div class="stat-icon" style="background:#f5f3ff;font-size:18px">⭐</div>
+          <div>
+            <div class="stat-val" id="s-feedback">—</div>
+            <div class="stat-lbl">Total Feedback</div>
+          </div>
+        </div>
       </div>
 
       <!-- SHORTCUT -->
@@ -438,6 +340,9 @@
         </a>
         <a href="ekspor.html" class="shortcut-btn">
           <i class="fa fa-file-excel"></i> Ekspor Laporan
+        </a>
+        <a href="feedback-admin.html" class="shortcut-btn">
+          <i class="fa fa-star"></i> Lihat Feedback
         </a>
       </div>
 
@@ -498,6 +403,7 @@
     loadStats();
     loadKecamatan();
     loadValidasiStatus();
+    loadFeedbackCount();
   })();
 
   // ── Statistik ─────────────────────────────────────────
@@ -545,6 +451,21 @@
     }
   }
 
+  // ── Jumlah feedback ──────────────────────────────────
+  async function loadFeedbackCount() {
+    try {
+      const res  = await apiFetch('/api/feedback');
+      const data = await res.json();
+      const total = Array.isArray(data) ? data.length : (data.data?.length || 0);
+      const avgRating = Array.isArray(data) && data.length
+        ? (data.reduce((s, f) => s + (f.rating || 0), 0) / data.length).toFixed(1)
+        : '—';
+      document.getElementById('s-feedback').textContent = fmtNum(total);
+      const badge = document.getElementById('badge-feedback');
+      if (badge) badge.textContent = total;
+    } catch(e) {}
+  }
+
   // ── Status validasi ───────────────────────────────────
   async function loadValidasiStatus() {
     // Cek aset KIB C tanpa foto
@@ -586,20 +507,6 @@
         '<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Gagal memuat status.</div>';
     }
   }
-</script>
-  <script>
-  function toggleSidebar() {
-    document.querySelector('.sidebar').classList.toggle('open');
-    document.getElementById('sidebar-overlay').classList.toggle('show');
-  }
-  function closeSidebar() {
-    document.querySelector('.sidebar').classList.remove('open');
-    document.getElementById('sidebar-overlay').classList.remove('show');
-  }
-  // Tutup sidebar saat klik link (mobile)
-  document.querySelectorAll('.sidebar-link').forEach(link => {
-    link.addEventListener('click', closeSidebar);
-  });
 </script>
 </body>
 </html>

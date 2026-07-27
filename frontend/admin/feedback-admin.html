@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <link rel="icon" type="image/png" href="/gambar/Group 23.png"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kelola Feedback — Admin SIGAB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:   #0f2c4a; --navy2:  #163659; --blue:  #1d6fa4;
+      --gold:   #c9a84c; --gold2:  #e8c96a;
+      --text:   #1a2535; --muted:  #6b7280;
+      --border: #e5e7eb; --bg:     #f8fafc; --surface: #ffffff;
+      --sidebar-w: 230px; --header-h: 58px;
+      --success: #16a34a; --warning: #d97706; --danger: #dc2626;
+    }
+    html, body { height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); background: var(--bg); }
+
+    /* ── LAYOUT ── */
+    .admin-layout { display: flex; height: 100vh; overflow: hidden; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w); flex-shrink: 0; background: var(--navy);
+      display: flex; flex-direction: column;
+      border-right: 1px solid rgba(255,255,255,0.06); overflow-y: auto;
+    }
+    .sidebar-brand {
+      padding: 18px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+    }
+    .sidebar-logo { width: 34px; height: 34px; background: white; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+    .sidebar-logo img { width: 100%; height: 100%; object-fit: contain; padding: 3px; }
+    .sidebar-title { color: white; font-size: 14px; font-weight: 800; line-height: 1.2; }
+    .sidebar-title span { color: var(--gold2); }
+    .sidebar-sub { color: rgba(255,255,255,0.35); font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; }
+    .sidebar-nav { flex: 1; padding: 12px 10px; }
+    .nav-group { margin-bottom: 6px; }
+    .nav-group-label {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: rgba(255,255,255,0.3); padding: 10px 10px 5px;
+    }
+    .sidebar-link {
+      display: flex; align-items: center; gap: 10px; padding: 9px 10px;
+      border-radius: 8px; font-size: 13px; font-weight: 500;
+      color: rgba(255,255,255,0.65); text-decoration: none;
+      transition: all .15s; margin-bottom: 1px;
+    }
+    .sidebar-link i { width: 18px; text-align: center; font-size: 13px; }
+    .sidebar-link:hover { background: rgba(255,255,255,0.07); color: white; }
+    .sidebar-link.active { background: rgba(201,168,76,0.18); color: var(--gold2); }
+    .sidebar-user { padding: 14px 16px; border-top: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
+    .sidebar-user-info { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .user-avatar {
+      width: 34px; height: 34px; background: var(--gold); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--navy); font-size: 14px; font-weight: 800; flex-shrink: 0;
+    }
+    .user-name { font-size: 12px; font-weight: 600; color: white; }
+    .user-role { font-size: 10px; color: rgba(255,255,255,0.4); }
+    .btn-logout {
+      width: 100%; padding: 8px; background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 7px;
+      color: rgba(255,255,255,0.5); font-size: 12px; font-weight: 500;
+      cursor: pointer; font-family: inherit; transition: all .15s;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+    .btn-logout:hover { background: rgba(220,38,38,0.15); color: #fca5a5; }
+
+    /* ── MAIN ── */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .topbar {
+      height: var(--header-h); background: white; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px; flex-shrink: 0; gap: 12px;
+    }
+    .topbar-left h1 { font-size: 16px; font-weight: 700; color: var(--navy); }
+    .topbar-left p  { font-size: 12px; color: var(--muted); margin-top: 1px; }
+    .content { flex: 1; overflow-y: auto; padding: 24px 28px; }
+
+    /* ── HAMBURGER ── */
+    .hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      background: none; border: none; cursor: pointer; padding: 6px; flex-shrink: 0;
+    }
+    .hamburger span { display: block; width: 20px; height: 2px; background: var(--navy); border-radius: 2px; transition: all .3s; }
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 998; }
+    .sidebar-overlay.show { display: block; }
+
+    /* ── STAT CARDS ── */
+    .stat-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 24px; }
+    .stat-card {
+      background: white; border: 1px solid var(--border); border-radius: 12px;
+      padding: 16px 18px; display: flex; align-items: center; gap: 14px;
+      transition: box-shadow .2s;
+    }
+    .stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+    .stat-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .stat-icon.blue  { background: #eff6ff; }
+    .stat-icon.gold  { background: #fffbeb; }
+    .stat-icon.green { background: #f0fdf4; }
+    .stat-icon.red   { background: #fef2f2; }
+    .stat-icon.purple{ background: #f5f3ff; }
+    .stat-val { font-size: 22px; font-weight: 800; color: var(--navy); line-height: 1; margin-bottom: 2px; }
+    .stat-lbl { font-size: 10px; color: var(--muted); font-weight: 500; }
+
+    /* ── GRAFIK GRID ── */
+    .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+    .chart-card { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .chart-head { padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; color: var(--navy); }
+    .chart-body { padding: 18px; }
+
+    /* ── BAR CHART RATING ── */
+    .rating-bars { display: flex; flex-direction: column; gap: 10px; }
+    .rating-bar-item { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+    .rating-label { width: 60px; flex-shrink: 0; color: var(--text); font-weight: 600; display: flex; align-items: center; gap: 4px; }
+    .rating-track { flex: 1; height: 22px; background: #f3f4f6; border-radius: 6px; overflow: hidden; }
+    .rating-fill { height: 100%; border-radius: 6px; transition: width 1s ease; display: flex; align-items: center; padding-left: 8px; }
+    .rating-fill span { color: white; font-size: 10px; font-weight: 700; }
+    .rating-count { width: 40px; text-align: right; color: var(--muted); font-size: 11px; flex-shrink: 0; }
+
+    /* ── NPS ── */
+    .nps-display { text-align: center; padding: 12px 0; }
+    .nps-score { font-size: 56px; font-weight: 800; line-height: 1; margin-bottom: 6px; }
+    .nps-score.good { color: var(--success); }
+    .nps-score.ok   { color: var(--warning); }
+    .nps-score.bad  { color: var(--danger); }
+    .nps-label { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+    .nps-breakdown { display: flex; gap: 0; border-radius: 8px; overflow: hidden; margin-top: 12px; }
+    .nps-seg { flex: 1; padding: 8px; text-align: center; font-size: 10px; font-weight: 700; }
+    .nps-seg.detractor { background: #fef2f2; color: #dc2626; }
+    .nps-seg.passive   { background: #fffbeb; color: #d97706; }
+    .nps-seg.promoter  { background: #f0fdf4; color: #16a34a; }
+    .nps-seg div:first-child { font-size: 18px; font-weight: 800; margin-bottom: 2px; }
+
+    /* ── ASPEK RADAR (bar horizontal) ── */
+    .aspek-list { display: flex; flex-direction: column; gap: 12px; }
+    .aspek-item {}
+    .aspek-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+    .aspek-header span:first-child { color: var(--text); font-weight: 500; }
+    .aspek-header span:last-child  { color: var(--navy); font-weight: 700; }
+    .aspek-track { height: 8px; background: #f0f0f0; border-radius: 100px; overflow: hidden; }
+    .aspek-fill  { height: 100%; border-radius: 100px; transition: width 1s ease; }
+
+    /* ── TABEL FEEDBACK ── */
+    .table-section { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .table-head {
+      padding: 14px 18px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+    }
+    .table-head h2 { font-size: 13px; font-weight: 700; color: var(--navy); }
+    .filter-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .form-control {
+      padding: 7px 11px; border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: 12px; font-family: inherit; color: var(--text); background: var(--bg);
+      transition: border-color .15s;
+    }
+    .form-control:focus { outline: none; border-color: var(--blue); background: white; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th {
+      padding: 10px 14px; text-align: left; font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
+      background: var(--bg); border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    td { padding: 10px 14px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafbfc; }
+
+    /* ── STAR DISPLAY ── */
+    .stars { color: var(--gold); letter-spacing: 1px; font-size: 13px; }
+    .stars-empty { color: #e5e7eb; }
+
+    /* ── BADGE ── */
+    .badge { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: 10px; font-weight: 700; }
+    .badge-5 { background: #dcfce7; color: #15803d; }
+    .badge-4 { background: #dbeafe; color: #1d4ed8; }
+    .badge-3 { background: #fef9c3; color: #a16207; }
+    .badge-2 { background: #ffedd5; color: #c2410c; }
+    .badge-1 { background: #fee2e2; color: #b91c1c; }
+
+    /* ── DETAIL MODAL ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5); z-index: 1000;
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-box {
+      background: white; border-radius: 16px; width: 600px; max-width: 95vw;
+      max-height: 85vh; overflow-y: auto;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+      animation: modalIn .2s ease;
+    }
+    @keyframes modalIn { from { opacity:0; transform: scale(0.95); } to { opacity:1; transform: scale(1); } }
+    .modal-head {
+      padding: 20px 24px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-head h3 { font-size: 15px; font-weight: 700; color: var(--navy); }
+    .modal-close {
+      width: 28px; height: 28px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 7px; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; font-size: 14px; color: var(--muted);
+    }
+    .modal-close:hover { background: #fee2e2; color: var(--danger); border-color: #fecaca; }
+    .modal-body { padding: 20px 24px; }
+    .detail-row { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f3f4f6; font-size: 13px; }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { width: 160px; flex-shrink: 0; color: var(--muted); font-weight: 500; }
+    .detail-value { flex: 1; color: var(--text); font-weight: 500; word-break: break-word; }
+    .detail-masukan {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px 14px;
+      font-size: 13px; color: var(--text); line-height: 1.6;
+      margin-top: 4px; white-space: pre-wrap;
+    }
+
+    /* ── PAGINATION ── */
+    .pagination { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 16px; }
+    .page-btn {
+      width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 7px;
+      background: white; cursor: pointer; font-size: 12px; font-weight: 600;
+      color: var(--text); display: flex; align-items: center; justify-content: center;
+      transition: all .15s; font-family: inherit;
+    }
+    .page-btn:hover { background: var(--bg); border-color: var(--blue); color: var(--blue); }
+    .page-btn.active { background: var(--navy); color: white; border-color: var(--navy); }
+    .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .page-info { font-size: 12px; color: var(--muted); padding: 0 8px; }
+
+    /* ── EMPTY STATE ── */
+    .empty-state { text-align: center; padding: 48px 20px; color: var(--muted); }
+    .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-state p { font-size: 13px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .admin-layout { flex-direction: column; }
+      .sidebar {
+        position: fixed; top: 0; left: 0; bottom: 0;
+        width: 240px; z-index: 999;
+        transform: translateX(-100%); transition: transform .3s ease;
+      }
+      .sidebar.open { transform: translateX(0); }
+      .hamburger { display: flex; }
+      .main { height: 100vh; overflow: hidden; }
+      .topbar { padding: 0 16px; }
+      .topbar-left p { display: none; }
+      .content { padding: 14px; }
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+      .chart-grid { grid-template-columns: 1fr; }
+      .filter-row { flex-direction: column; width: 100%; }
+      .filter-row .form-control { width: 100%; }
+      table { min-width: 700px; }
+    }
+    @media (max-width: 480px) {
+      .stat-grid { grid-template-columns: 1fr 1fr; }
+      .content { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo"><img src="/gambar/Group 23.png" alt="Logo SIGAB"/></div>
+      <div>
+        <div class="sidebar-title"><span>S</span>IGAB</div>
+        <div class="sidebar-sub">Panel Admin</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group">
+        <div class="nav-group-label">Utama</div>
+        <a href="dashboard.html"     class="sidebar-link"><i class="fa fa-gauge"></i> Dashboard</a>
+        <a href="aset-tanah.html"    class="sidebar-link"><i class="fa fa-map"></i> Aset Tanah (KIB A)</a>
+        <a href="aset-bangunan.html" class="sidebar-link"><i class="fa fa-building"></i> Aset Bangunan (KIB C)</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Pengelolaan</div>
+        <a href="validasi.html"      class="sidebar-link"><i class="fa fa-circle-check"></i> Validasi Aset</a>
+        <a href="ekspor.html"        class="sidebar-link"><i class="fa fa-file-excel"></i> Ekspor Laporan</a>
+        <a href="feedback-admin.html" class="sidebar-link active"><i class="fa fa-star"></i> Kelola Feedback</a>
+      </div>
+      <div class="nav-group" data-admin-only>
+        <div class="nav-group-label">Administrasi</div>
+        <a href="users.html" class="sidebar-link"><i class="fa fa-users"></i> Kelola User</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Publik</div>
+        <a href="/"           class="sidebar-link"><i class="fa fa-house"></i> Beranda</a>
+        <a href="/peta.html"  class="sidebar-link"><i class="fa fa-map-location-dot"></i> Peta Publik</a>
+      </div>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-info">
+        <div class="user-avatar" id="user-initial">—</div>
+        <div>
+          <div class="user-name" id="admin-name">—</div>
+          <div class="user-role" id="admin-role">—</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="logout()"><i class="fa fa-right-from-bracket"></i> Keluar</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <button class="hamburger" id="hamburger" onclick="toggleSidebar()">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="topbar-left">
+        <h1>⭐ Kelola Feedback</h1>
+        <p>Penilaian dan masukan dari pengguna SIGAB</p>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- STAT CARDS -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue">💬</div>
+          <div>
+            <div class="stat-val" id="stat-total">—</div>
+            <div class="stat-lbl">Total Feedback</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon gold">⭐</div>
+          <div>
+            <div class="stat-val" id="stat-rating">—</div>
+            <div class="stat-lbl">Rata-rata Rating</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">📈</div>
+          <div>
+            <div class="stat-val" id="stat-nps">—</div>
+            <div class="stat-lbl">Rata-rata NPS</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple">😊</div>
+          <div>
+            <div class="stat-val" id="stat-puas">—%</div>
+            <div class="stat-lbl">Pengguna Puas (⭐4-5)</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red">📝</div>
+          <div>
+            <div class="stat-val" id="stat-masukan">—</div>
+            <div class="stat-lbl">Ada Masukan Teknis</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRAFIK -->
+      <div class="chart-grid">
+
+        <!-- Distribusi Rating -->
+        <div class="chart-card">
+          <div class="chart-head">⭐ Distribusi Rating Keseluruhan</div>
+          <div class="chart-body">
+            <div class="rating-bars" id="rating-bars">
+              <div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Memuat...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NPS Score -->
+        <div class="chart-card">
+          <div class="chart-head">📊 Net Promoter Score (NPS)</div>
+          <div class="chart-body">
+            <div class="nps-display" id="nps-display">
+              <div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Memuat...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Aspek Penilaian -->
+        <div class="chart-card">
+          <div class="chart-head">📋 Rata-rata Penilaian Per Aspek</div>
+          <div class="chart-body">
+            <div class="aspek-list" id="aspek-chart">
+              <div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Memuat...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fitur Terpopuler -->
+        <div class="chart-card">
+          <div class="chart-head">🏆 Fitur yang Paling Berguna</div>
+          <div class="chart-body">
+            <div id="fitur-chart">
+              <div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Memuat...</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- TABEL FEEDBACK -->
+      <div class="table-section">
+        <div class="table-head">
+          <h2>Daftar Feedback Masuk</h2>
+          <div class="filter-row">
+            <select class="form-control" id="filter-rating" onchange="applyFilter()">
+              <option value="">Semua Rating</option>
+              <option value="5">⭐⭐⭐⭐⭐ 5</option>
+              <option value="4">⭐⭐⭐⭐ 4</option>
+              <option value="3">⭐⭐⭐ 3</option>
+              <option value="2">⭐⭐ 2</option>
+              <option value="1">⭐ 1</option>
+            </select>
+            <input type="text" class="form-control" id="filter-search"
+              placeholder="Cari nama / masukan..." oninput="applyFilter()" style="width:200px"/>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Tanggal</th>
+                <th>Nama</th>
+                <th>Rating</th>
+                <th>NPS</th>
+                <th>Aspek Peta</th>
+                <th>Aspek Info</th>
+                <th>Aspek Performa</th>
+                <th>Aspek Tampilan</th>
+                <th>Masukan</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="feedback-tbody">
+              <tr><td colspan="11" style="text-align:center;padding:32px;color:var(--muted)">Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /admin-layout -->
+
+<!-- MODAL DETAIL -->
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Detail Feedback</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script src="/admin/js/admin.js"></script>
+<script>
+  let allFeedback = [];
+  let filtered    = [];
+  let currentPage = 1;
+  const perPage   = 10;
+
+  // ── INIT ──────────────────────────────────────────────
+  (async function init() {
+    const user = await requireLogin();
+    if (!user) return;
+    renderUserInfo();
+    setActiveNav();
+    document.getElementById('user-initial').textContent = (user.nama_lengkap || 'A')[0].toUpperCase();
+    await loadFeedback();
+  })();
+
+  // ── LOAD DATA ─────────────────────────────────────────
+  async function loadFeedback() {
+    try {
+      const res  = await apiFetch('/api/feedback');
+      const data = await res.json();
+      allFeedback = Array.isArray(data) ? data : (data.data || []);
+      filtered    = [...allFeedback];
+      renderStats();
+      renderCharts();
+      renderTable();
+    } catch(e) {
+      showToast('Gagal memuat data feedback', 'error');
+    }
+  }
+
+  // ── STATISTIK ─────────────────────────────────────────
+  function renderStats() {
+    const n = allFeedback.length;
+    if (!n) return;
+
+    const avgRating = allFeedback.reduce((s, f) => s + (f.rating || 0), 0) / n;
+    const avgNps    = allFeedback.filter(f => f.nps !== null).reduce((s, f) => s + (f.nps || 0), 0)
+                      / (allFeedback.filter(f => f.nps !== null).length || 1);
+    const puas      = allFeedback.filter(f => f.rating >= 4).length;
+    const adaMasukan= allFeedback.filter(f => f.kendala && f.kendala.trim() && f.kendala.trim() !== '-').length;
+
+    document.getElementById('stat-total').textContent   = fmtNum(n);
+    document.getElementById('stat-rating').textContent  = avgRating.toFixed(1) + ' / 5';
+    document.getElementById('stat-nps').textContent     = avgNps.toFixed(1) + ' / 10';
+    document.getElementById('stat-puas').textContent    = Math.round(puas / n * 100) + '%';
+    document.getElementById('stat-masukan').textContent = fmtNum(adaMasukan);
+  }
+
+  // ── GRAFIK ────────────────────────────────────────────
+  function renderCharts() {
+    renderRatingBars();
+    renderNPS();
+    renderAspek();
+    renderFitur();
+  }
+
+  function renderRatingBars() {
+    const counts = {5:0, 4:0, 3:0, 2:0, 1:0};
+    allFeedback.forEach(f => { if (f.rating) counts[f.rating]++; });
+    const total = allFeedback.length || 1;
+    const colors = { 5:'#16a34a', 4:'#1d6fa4', 3:'#d97706', 2:'#ea580c', 1:'#dc2626' };
+    const labels = { 5:'Sangat Puas', 4:'Puas', 3:'Cukup', 2:'Tidak Puas', 1:'Sangat Tidak Puas' };
+
+    document.getElementById('rating-bars').innerHTML = [5,4,3,2,1].map(r => `
+      <div class="rating-bar-item">
+        <div class="rating-label">
+          <span style="color:${colors[r]}">★</span> ${r}
+        </div>
+        <div class="rating-track">
+          <div class="rating-fill" style="width:0%;background:${colors[r]}" data-w="${Math.round(counts[r]/total*100)}">
+            ${counts[r] > 0 ? `<span>${labels[r]}</span>` : ''}
+          </div>
+        </div>
+        <div class="rating-count">${counts[r]}x</div>
+      </div>
+    `).join('');
+
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.rating-fill').forEach(el => {
+        el.style.width = el.dataset.w + '%';
+      });
+    });
+  }
+
+  function renderNPS() {
+    const npsData = allFeedback.filter(f => f.nps !== null && f.nps !== undefined);
+    if (!npsData.length) {
+      document.getElementById('nps-display').innerHTML = '<p style="text-align:center;color:var(--muted);font-size:12px">Belum ada data NPS</p>';
+      return;
+    }
+    const avg       = npsData.reduce((s, f) => s + f.nps, 0) / npsData.length;
+    const promoters = npsData.filter(f => f.nps >= 9).length;
+    const passives  = npsData.filter(f => f.nps >= 7 && f.nps <= 8).length;
+    const detractors= npsData.filter(f => f.nps <= 6).length;
+    const npsScore  = Math.round((promoters - detractors) / npsData.length * 100);
+    const cls       = npsScore >= 50 ? 'good' : npsScore >= 0 ? 'ok' : 'bad';
+    const npsLabel  = npsScore >= 70 ? 'Luar Biasa 🎉' : npsScore >= 30 ? 'Baik 👍' : npsScore >= 0 ? 'Perlu Ditingkatkan' : 'Kritis ⚠';
+
+    document.getElementById('nps-display').innerHTML = `
+      <div class="nps-score ${cls}">${npsScore}</div>
+      <div class="nps-label">NPS Score — ${npsLabel}</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Rata-rata jawaban: ${avg.toFixed(1)} / 10 &nbsp;|&nbsp; ${npsData.length} responden</div>
+      <div class="nps-breakdown">
+        <div class="nps-seg detractor">
+          <div>${detractors}</div>
+          <div>Detractor<br>(0–6)</div>
+        </div>
+        <div class="nps-seg passive">
+          <div>${passives}</div>
+          <div>Passive<br>(7–8)</div>
+        </div>
+        <div class="nps-seg promoter">
+          <div>${promoters}</div>
+          <div>Promoter<br>(9–10)</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderAspek() {
+    const aspekKeys = [
+      { key: 'aspek_peta',      label: '🗺 Kemudahan Peta',    color: '#1d6fa4' },
+      { key: 'aspek_informasi', label: '📊 Kelengkapan Info',   color: '#16a34a' },
+      { key: 'aspek_performa',  label: '⚡ Kecepatan Sistem',   color: '#d97706' },
+      { key: 'aspek_tampilan',  label: '🎨 Tampilan Antarmuka', color: '#7c3aed' },
+    ];
+
+    const avgs = aspekKeys.map(a => {
+      const valid = allFeedback.filter(f => f[a.key]);
+      const avg   = valid.length ? valid.reduce((s, f) => s + f[a.key], 0) / valid.length : 0;
+      return { ...a, avg, pct: Math.round(avg / 5 * 100) };
+    });
+
+    document.getElementById('aspek-chart').innerHTML = avgs.map(a => `
+      <div class="aspek-item">
+        <div class="aspek-header">
+          <span>${a.label}</span>
+          <span>${a.avg.toFixed(2)} / 5</span>
+        </div>
+        <div class="aspek-track">
+          <div class="aspek-fill" style="width:0%;background:${a.color}" data-w="${a.pct}"></div>
+        </div>
+      </div>
+    `).join('');
+
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.aspek-fill').forEach(el => {
+        el.style.width = el.dataset.w + '%';
+      });
+    });
+  }
+
+  function renderFitur() {
+    const counts = {};
+    allFeedback.forEach(f => {
+      const fitur = f.fitur_berguna;
+      if (!fitur) return;
+      const arr = Array.isArray(fitur) ? fitur
+        : (typeof fitur === 'string' ? fitur.replace(/[\[\]"]/g,'').split(',').map(s => s.trim()).filter(Boolean) : []);
+      arr.forEach(item => {
+        const key = item.replace(/^[^\w]+/, '').trim();
+        if (key) counts[key] = (counts[key] || 0) + 1;
+      });
+    });
+
+    const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0, 6);
+    const max    = sorted[0]?.[1] || 1;
+
+    if (!sorted.length) {
+      document.getElementById('fitur-chart').innerHTML = '<p style="text-align:center;color:var(--muted);font-size:12px;padding:20px">Belum ada data fitur</p>';
+      return;
+    }
+
+    document.getElementById('fitur-chart').innerHTML = sorted.map(([label, count], i) => `
+      <div class="aspek-item" style="margin-bottom:10px">
+        <div class="aspek-header">
+          <span style="font-size:11px">${label}</span>
+          <span>${count}x</span>
+        </div>
+        <div class="aspek-track">
+          <div class="aspek-fill" style="width:0%;background:${['#1d6fa4','#16a34a','#c9a84c','#7c3aed','#dc2626','#0891b2'][i]}"
+               data-w="${Math.round(count/max*100)}"></div>
+        </div>
+      </div>
+    `).join('');
+
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.aspek-fill').forEach(el => {
+        el.style.width = el.dataset.w + '%';
+      });
+    });
+  }
+
+  // ── TABEL ─────────────────────────────────────────────
+  function applyFilter() {
+    const rating = document.getElementById('filter-rating').value;
+    const search = document.getElementById('filter-search').value.toLowerCase();
+    filtered = allFeedback.filter(f => {
+      const matchRating = !rating || String(f.rating) === rating;
+      const matchSearch = !search ||
+        (f.nama  && f.nama.toLowerCase().includes(search)) ||
+        (f.masukan && f.masukan.toLowerCase().includes(search));
+      return matchRating && matchSearch;
+    });
+    currentPage = 1;
+    renderTable();
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('feedback-tbody');
+    const start = (currentPage - 1) * perPage;
+    const page  = filtered.slice(start, start + perPage);
+
+    if (!page.length) {
+      tbody.innerHTML = `
+        <tr><td colspan="11">
+          <div class="empty-state">
+            <div class="empty-icon">💬</div>
+            <p>Belum ada feedback yang masuk</p>
+          </div>
+        </td></tr>`;
+      document.getElementById('pagination').innerHTML = '';
+      return;
+    }
+
+    tbody.innerHTML = page.map((f, i) => {
+      const stars = '★'.repeat(f.rating || 0) + '☆'.repeat(5 - (f.rating || 0));
+      const starsHtml = `<span class="stars">${'★'.repeat(f.rating||0)}</span><span class="stars-empty">${'☆'.repeat(5-(f.rating||0))}</span>`;
+      const masukan = f.masukan ? (f.masukan.length > 40 ? f.masukan.substring(0,40)+'...' : f.masukan) : '—';
+      const badgeCls = `badge-${f.rating || 1}`;
+
+      return `<tr>
+        <td style="color:var(--muted)">${start + i + 1}</td>
+        <td style="white-space:nowrap">${fmtDate(f.created_at)}</td>
+        <td><strong>${f.nama || '<span style="color:var(--muted)">Anonim</span>'}</strong>
+            ${f.email ? `<br><span style="font-size:10px;color:var(--muted)">${f.email}</span>` : ''}</td>
+        <td>
+          <span class="badge ${badgeCls}">${f.rating || '—'}/5</span><br>
+          <span style="font-size:11px">${starsHtml}</span>
+        </td>
+        <td style="text-align:center">${f.nps !== null && f.nps !== undefined ? f.nps + '/10' : '—'}</td>
+        <td style="text-align:center">${f.aspek_peta || '—'}</td>
+        <td style="text-align:center">${f.aspek_informasi || '—'}</td>
+        <td style="text-align:center">${f.aspek_performa || '—'}</td>
+        <td style="text-align:center">${f.aspek_tampilan || '—'}</td>
+        <td style="max-width:200px;color:var(--muted)">${masukan}</td>
+        <td>
+          <button onclick="openDetail(${f.id})"
+            style="padding:5px 12px;background:var(--navy);color:white;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">
+            Detail
+          </button>
+        </td>
+      </tr>`;
+    }).join('');
+
+    renderPagination();
+  }
+
+  function renderPagination() {
+    const total = Math.ceil(filtered.length / perPage);
+    const pag   = document.getElementById('pagination');
+    if (total <= 1) { pag.innerHTML = ''; return; }
+
+    let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+    for (let i = 1; i <= total; i++) {
+      if (i === 1 || i === total || (i >= currentPage-1 && i <= currentPage+1)) {
+        html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+      } else if (i === currentPage-2 || i === currentPage+2) {
+        html += `<span class="page-info">…</span>`;
+      }
+    }
+    html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===total?'disabled':''}>›</button>`;
+    html += `<span class="page-info">${filtered.length} feedback</span>`;
+    pag.innerHTML = html;
+  }
+
+  function goPage(p) {
+    const total = Math.ceil(filtered.length / perPage);
+    if (p < 1 || p > total) return;
+    currentPage = p;
+    renderTable();
+    document.querySelector('.table-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ── MODAL DETAIL ──────────────────────────────────────
+  function openDetail(id) {
+    const f = allFeedback.find(x => x.id === id);
+    if (!f) return;
+
+    const stars = `<span class="stars">${'★'.repeat(f.rating||0)}</span><span class="stars-empty">${'☆'.repeat(5-(f.rating||0))}</span>`;
+
+    const fiturArr = (() => {
+      if (!f.fitur_berguna) return [];
+      if (Array.isArray(f.fitur_berguna)) return f.fitur_berguna;
+      try { return JSON.parse(f.fitur_berguna); } catch { return []; }
+    })();
+
+    document.getElementById('modal-body').innerHTML = `
+      <div class="detail-row">
+        <div class="detail-label">Tanggal</div>
+        <div class="detail-value">${fmtDate(f.created_at)}</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">Nama</div>
+        <div class="detail-value">${f.nama || '<em style="color:var(--muted)">Anonim</em>'}</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">Email</div>
+        <div class="detail-value">${f.email || '—'}</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">Rating Keseluruhan</div>
+        <div class="detail-value">${stars} <strong>${f.rating || '—'} / 5</strong></div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">NPS Score</div>
+        <div class="detail-value">${f.nps !== null && f.nps !== undefined ? f.nps + ' / 10' : '—'}</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">Aspek Peta</div>
+        <div class="detail-value">${f.aspek_peta || '—'} / 5</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">Aspek Informasi</div>
+        <div class="detail-value">${f.aspek_informasi || '—'} / 5</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">Aspek Performa</div>
+        <div class="detail-value">${f.aspek_performa || '—'} / 5</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">Aspek Tampilan</div>
+        <div class="detail-value">${f.aspek_tampilan || '—'} / 5</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">Fitur Berguna</div>
+        <div class="detail-value">${fiturArr.length ? fiturArr.map(t => `<span style="display:inline-block;background:#eff6ff;color:#1d4ed8;border-radius:100px;padding:2px 10px;font-size:11px;font-weight:600;margin:2px">${t}</span>`).join('') : '—'}</div>
+      </div>
+      <div class="detail-row" style="flex-direction:column;gap:6px">
+        <div class="detail-label">Saran & Masukan</div>
+        <div class="detail-masukan">${f.masukan || '—'}</div>
+      </div>
+      ${f.kendala && f.kendala.trim() && f.kendala.trim() !== '-' ? `
+      <div class="detail-row" style="flex-direction:column;gap:6px">
+        <div class="detail-label" style="color:var(--danger)">⚠ Kendala / Bug</div>
+        <div class="detail-masukan" style="border-color:#fecaca;background:#fef2f2">${f.kendala}</div>
+      </div>` : ''}
+    `;
+    document.getElementById('modal-detail').classList.add('show');
+  }
+
+  function closeModal() {
+    document.getElementById('modal-detail').classList.remove('show');
+  }
+  document.getElementById('modal-detail').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  // ── SIDEBAR MOBILE ────────────────────────────────────
+  function toggleSidebar() {
+    document.querySelector('.sidebar').classList.toggle('open');
+    document.getElementById('sidebar-overlay').classList.toggle('show');
+  }
+  function closeSidebar() {
+    document.querySelector('.sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('show');
+  }
+  document.querySelectorAll('.sidebar-link').forEach(l => l.addEventListener('click', closeSidebar));
+</script>
+</body>
+</html>

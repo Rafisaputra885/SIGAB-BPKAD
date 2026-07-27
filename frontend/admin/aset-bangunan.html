@@ -120,10 +120,13 @@
     .form-section { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:16px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border); grid-column:span 2; }
 
     /* MINI MAP */
-    #mini-map-b { height:200px; border-radius:8px; border:1.5px solid var(--border); }
+    #mini-map-b { height:220px; border-radius:8px; border:1.5px solid var(--border); }
     .map-hint { font-size:10px; color:var(--muted); margin-top:5px; }
     .coord-display { display:flex; gap:8px; margin-top:8px; }
     .coord-box { flex:1; padding:6px 10px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-size:11px; font-family:monospace; color:var(--navy); }
+    .kec-legend { font-size:10px; color:var(--muted); margin-top:4px; display:flex; gap:14px; flex-wrap:wrap; }
+    .kec-legend span { display:inline-flex; align-items:center; gap:4px; }
+    .kec-swatch { width:10px; height:10px; display:inline-block; border-radius:2px; }
 
     /* FOTO PREVIEW */
     .foto-preview { margin-top:8px; }
@@ -234,6 +237,131 @@
       table { min-width: 500px; font-size: 11px; }
       .modal-box { width: 98vw !important; padding: 16px !important; }
     }
+
+
+    .geom-changed {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #f3e8ff; color: #7c3aed;
+      border: 1px solid #e9d5ff; border-radius: 100px;
+      font-size: 10px; font-weight: 700; padding: 2px 8px;
+      animation: geomPulse 2s ease-in-out infinite;
+    }
+    @keyframes geomPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(124,58,237,0.3); }
+      50%       { box-shadow: 0 0 0 4px rgba(124,58,237,0); }
+    }
+    .geom-changed i { font-size: 9px; }
+
+    /* ══ HISTORY SIDE PANEL ══ */
+    .history-panel {
+      position: fixed; top: 0; right: 0; bottom: 0;
+      width: 420px; background: white;
+      border-left: 1px solid var(--border);
+      box-shadow: -8px 0 32px rgba(0,0,0,0.15);
+      z-index: 8000;
+      display: flex; flex-direction: column;
+      transform: translateX(100%);
+      transition: transform .35s cubic-bezier(0.4,0,0.2,1);
+    }
+    .history-panel.open { transform: translateX(0); }
+    .history-panel-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.3);
+      z-index: 7999; display: none;
+    }
+    .history-panel-overlay.show { display: block; }
+    .hp-head {
+      padding: 16px 18px; border-bottom: 1px solid var(--border);
+      background: var(--navy); color: white; flex-shrink: 0;
+    }
+    .hp-head-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .hp-head-top h3 { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .hp-close {
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+      color: white; border-radius: 7px; width: 28px; height: 28px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; transition: all .15s;
+    }
+    .hp-close:hover { background: rgba(255,255,255,0.2); }
+    .hp-aset-info { font-size: 11px; color: rgba(255,255,255,0.6); }
+    .hp-aset-nibar { font-size: 13px; font-weight: 700; color: var(--gold2); }
+    .hp-body { flex: 1; overflow-y: auto; padding: 16px; }
+    .hp-body::-webkit-scrollbar { width: 4px; }
+    .hp-body::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+    .timeline { position: relative; padding-left: 28px; }
+    .timeline::before {
+      content: ''; position: absolute; left: 10px; top: 0; bottom: 0;
+      width: 2px; background: var(--border);
+    }
+    .timeline-item { position: relative; margin-bottom: 20px; }
+    .timeline-dot {
+      position: absolute; left: -24px; top: 4px;
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 2px solid white; z-index: 1;
+    }
+    .timeline-dot.create   { background: var(--success); box-shadow: 0 0 0 2px #bbf7d0; }
+    .timeline-dot.update   { background: var(--blue);    box-shadow: 0 0 0 2px #bfdbfe; }
+    .timeline-dot.delete   { background: var(--danger);  box-shadow: 0 0 0 2px #fecaca; }
+    .timeline-dot.rollback { background: var(--warning); box-shadow: 0 0 0 2px #fde68a; }
+    .timeline-card {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 14px; transition: border-color .15s;
+    }
+    .timeline-card:hover { border-color: var(--blue); }
+    .tc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 4px; }
+    .tc-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 100px; font-size: 10px; font-weight: 700;
+    }
+    .tc-badge.create   { background: #dcfce7; color: #15803d; }
+    .tc-badge.update   { background: #dbeafe; color: #1d4ed8; }
+    .tc-badge.delete   { background: #fee2e2; color: #b91c1c; }
+    .tc-badge.rollback { background: #fef9c3; color: #a16207; }
+    .tc-badge.geom     { background: #f3e8ff; color: #7e22ce; }
+    .tc-badge.keduanya { background: #fce7f3; color: #be185d; }
+    .tc-time { font-size: 10px; color: var(--muted); }
+    .tc-user { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+    .tc-user strong { color: var(--text); }
+    .tc-diff { margin-top: 8px; }
+    .tc-diff-title { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+    .diff-label { font-size: 10px; font-weight: 600; color: var(--muted); margin-top: 6px; }
+    .diff-row { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 2px; font-size: 11px; }
+    .diff-old { background: #fef2f2; border: 1px solid #fecaca; border-radius: 5px; padding: 4px 8px; color: #991b1b; text-decoration: line-through; word-break: break-word; }
+    .diff-new { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 5px; padding: 4px 8px; color: #166534; word-break: break-word; }
+    .tc-map { height: 160px; border-radius: 7px; overflow: hidden; margin-top: 6px; border: 1px solid var(--border); }
+    .tc-map-wrap { margin-top: 8px; }
+    .tc-map-legend { display: flex; gap: 10px; margin-bottom: 4px; font-size: 10px; font-weight: 600; }
+    .tc-map-leg.old { color: #ef4444; }
+    .tc-map-leg.new { color: #16a34a; }
+    .tc-actions { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+    .btn-rollback {
+      padding: 5px 12px; background: #fef9c3; border: 1px solid #fde68a;
+      color: #92400e; border-radius: 6px; font-size: 11px; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: all .15s;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .btn-rollback:hover { background: #fde68a; }
+    .hp-empty { text-align: center; padding: 48px 20px; color: var(--muted); }
+    .hp-empty-icon { font-size: 48px; margin-bottom: 12px; opacity: .4; }
+    .hp-empty p { font-size: 13px; }
+    .hp-loading { text-align: center; padding: 32px; color: var(--muted); font-size: 13px; }
+
+    .btn-restore {
+      padding: 5px 12px; background: #dcfce7; border: 1px solid #bbf7d0;
+      color: #15803d; border-radius: 6px; font-size: 11px; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: all .15s;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .btn-restore:hover { background: #bbf7d0; }
+    .btn-del-history {
+      padding: 5px 9px; background: #fef2f2; border: 1px solid #fecaca;
+      color: #b91c1c; border-radius: 6px; font-size: 11px;
+      cursor: pointer; font-family: inherit; transition: all .15s;
+      margin-left: auto;
+    }
+    .btn-del-history:hover { background: #fecaca; }
+    .tc-actions { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+
+    @media (max-width: 768px) { .history-panel { width: 100%; } }
   </style>
 </head>
 <body>
@@ -257,6 +385,7 @@
         <div class="nav-group-label">Pengelolaan</div>
         <a href="validasi.html" class="sidebar-link"><i class="fa fa-circle-check"></i> Validasi Aset</a>
         <a href="ekspor.html"   class="sidebar-link"><i class="fa fa-file-excel"></i> Ekspor Laporan</a>
+        <a href="feedback-admin.html" class="sidebar-link"><i class="fa fa-star"></i> Kelola Feedback</a>
       </div>
       <div class="nav-group" data-admin-only>
         <div class="nav-group-label">Administrasi</div>
@@ -290,6 +419,7 @@
       </div>
       <div class="topbar-right">
         <button class="btn btn-outline" onclick="loadData()"><i class="fa fa-rotate"></i> Refresh</button>
+        <button class="btn btn-outline" onclick="openRiwayatTerhapus()" style="color:#7c3aed;border-color:#e9d5ff"><i class="fa fa-trash-can-arrow-up"></i> Aset Terhapus</button>
         <button class="btn btn-primary" onclick="openModal('tambah')"><i class="fa fa-plus"></i> Tambah Aset</button>
       </div>
     </div>
@@ -367,6 +497,37 @@
   </div>
 </div>
 
+
+  
+<!-- MODAL ASET TERHAPUS -->
+<div class="modal-overlay" id="modal-terhapus">
+  <div class="modal" style="max-width:760px">
+    <div class="modal-header" style="background:var(--navy);color:white">
+      <h3 style="color:white">🗑 Aset Terhapus — Bisa Dipulihkan</h3>
+      <button class="modal-close" onclick="closeModal('modal-terhapus')" style="color:white">✕</button>
+    </div>
+    <div class="modal-body" id="terhapus-body" style="padding:0">
+      <div style="text-align:center;padding:32px;color:var(--muted)"><i class="fa fa-spinner fa-spin"></i> Memuat...</div>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY SIDE PANEL -->
+  <div class="history-panel-overlay" id="hp-overlay" onclick="closeHistory()"></div>
+  <div class="history-panel" id="history-panel">
+    <div class="hp-head">
+      <div class="hp-head-top">
+        <h3>&#128336; Riwayat Perubahan</h3>
+        <button class="hp-close" onclick="closeHistory()">&#10005;</button>
+      </div>
+      <div class="hp-aset-nibar" id="hp-nibar">&#8212;</div>
+      <div class="hp-aset-info" id="hp-info">Memuat riwayat...</div>
+    </div>
+    <div class="hp-body" id="hp-body">
+      <div class="hp-loading"><i class="fa fa-spinner fa-spin"></i> Memuat...</div>
+    </div>
+  </div>
+
 <!-- MODAL FORM -->
 <div class="modal-overlay" id="modal-form">
   <div class="modal">
@@ -430,6 +591,10 @@
             <label>Koordinat (klik peta untuk menentukan lokasi)</label>
             <div id="mini-map-b"></div>
             <div class="map-hint">💡 Klik di peta atau geser marker untuk mengubah koordinat</div>
+            <div class="kec-legend">
+              <span><span class="kec-swatch" style="background:#e8c96a;border:1.5px solid #c9a84c"></span> Kecamatan aset</span>
+              <span><span class="kec-swatch" style="border:1.5px dashed #94a3b8"></span> Kecamatan lain (referensi)</span>
+            </div>
             <div class="coord-display">
               <div class="coord-box" id="disp-lat-b">Lat: —</div>
               <div class="coord-box" id="disp-lng-b">Lng: —</div>
@@ -486,6 +651,18 @@
   let currentMode = 'tambah';
   let currentRowId = null;
 
+  // ── LAYER BATAS KECAMATAN (referensi visual, non-interaktif) — sama seperti aset-tanah.html ──
+  let wilayahLayer   = null;
+  let wilayahGeoJSON = null;
+  async function getWilayahGeoJSON() {
+    if (wilayahGeoJSON) return wilayahGeoJSON;
+    try {
+      const res = await apiFetch('/api/geojson/wilayah');
+      wilayahGeoJSON = await res.json();
+    } catch(e) { wilayahGeoJSON = null; }
+    return wilayahGeoJSON;
+  }
+
   // ── INIT ──────────────────────────────────────────────
   (async function init() {
     const user = await requireLogin();
@@ -516,6 +693,17 @@
       renderTable(data.data, page);
       renderPagination(data.total, page);
       document.getElementById('table-info').textContent = `Total: ${fmtNum(data.total)} aset`;
+
+      // Cek geometri berubah secara async
+      const nibars = data.data.map(r => r.NIBAR).filter(Boolean);
+      checkGeomChangedB(nibars).then(() => {
+        nibars.forEach(nb => {
+          const badge = document.getElementById('geom-badge-b-' + nb);
+          if (badge && geomChangedSetB.has(nb)) {
+            badge.innerHTML = '<span class="geom-changed"><i class="fa fa-map-location-dot"></i> Geom berubah</span>';
+          }
+        });
+      });
     } catch(e) {
       document.getElementById('table-body').innerHTML =
         `<tr class="loading-row"><td colspan="9">Gagal memuat data.</td></tr>`;
@@ -529,6 +717,22 @@
   }
 
   // ── RENDER TABLE ──────────────────────────────────────
+  // Cache geometri berubah per bangunan
+  let geomChangedSetB = new Set();
+
+  async function checkGeomChangedB(nibars) {
+    try {
+      await Promise.all(nibars.map(nb =>
+        apiFetch('/api/aset/history/bangunan/' + encodeURIComponent(nb))
+          .then(r => r.json())
+          .then(data => {
+            if (data.some(h => h.jenis_perubahan === 'GEOMETRI' || h.jenis_perubahan === 'KEDUANYA'))
+              geomChangedSetB.add(nb);
+          }).catch(() => {})
+      ));
+    } catch(e) {}
+  }
+
   function renderTable(rows, page) {
     const tbody = document.getElementById('table-body');
     if (!rows || !rows.length) {
@@ -536,19 +740,20 @@
       return;
     }
     const start = (page - 1) * PER_PAGE;
-    cacheRows(rows);  // simpan untuk openEdit/openDetail
+    geomChangedSetB = new Set();
+    cacheRows(rows);
     tbody.innerHTML = rows.map((r, i) => {
       const foto = r['Foto_denah'] || '';
       const fotoHtml = foto
         ? `<a href="${foto}" target="_blank" rel="noopener noreferrer" class="foto-link">📷 Lihat</a>`
         : `<span class="no-foto">—</span>`;
-      // Encode NIBAR untuk dipakai sebagai URL param
       const nibarEnc = encodeURIComponent(r.NIBAR || '');
-      // Serialize row untuk modal (escape untuk attr HTML)
-      const rowJson = JSON.stringify(r).replace(/'/g, "\'");
-      return `<tr>
+      return `<tr id="row-b-${r.NIBAR}">
         <td>${start + i + 1}</td>
-        <td><div class="td-nibar" title="${r.NIBAR||''}">${r.NIBAR||'—'}</div></td>
+        <td>
+          <div class="td-nibar" title="${r.NIBAR||''}">${r.NIBAR||'—'}</div>
+          <span id="geom-badge-b-${r.NIBAR||''}"></span>
+        </td>
         <td><div class="td-opd" title="${r.OPD||''}">${(r.OPD||'—').replace('.xlsx','')}</div></td>
         <td><div class="td-nama" title="${r.Nama_Baran||''}">${r.Nama_Baran||'—'}</div></td>
         <td><div class="td-opd" title="${r.Spesifik_1||r.Spesifikas||''}">${r.Spesifik_1||r.Spesifikas||'—'}</div></td>
@@ -558,6 +763,7 @@
         <td>
           <div class="actions">
             <button class="btn btn-outline btn-sm" onclick="openDetailByNibar('${nibarEnc}')" title="Detail"><i class="fa fa-eye"></i></button>
+            <button class="btn btn-outline btn-sm" onclick="openHistory('bangunan', '${nibarEnc}', '${r.Nama_Baran||r.NIBAR}')" title="Riwayat" style="color:#7c3aed;border-color:#e9d5ff"><i class="fa fa-clock-rotate-left"></i></button>
             <button class="btn btn-outline btn-sm" onclick="openEditByNibar('${nibarEnc}')" title="Edit"><i class="fa fa-pen"></i></button>
             <button class="btn btn-danger btn-sm" onclick="hapusAset('${nibarEnc}')" title="Hapus"><i class="fa fa-trash"></i></button>
           </div>
@@ -578,17 +784,49 @@
     document.getElementById('pag-btns').innerHTML = html;
   }
 
-  // ── MINI MAP ──────────────────────────────────────────
-  function initMiniMap(lat, lng) {
-    if (miniMap) { miniMap.remove(); miniMap = null; mapMarker = null; }
+  // ── MINI MAP + LAYER BATAS KECAMATAN ──────────────────
+  async function initMiniMap(lat, lng, kecamatanAset) {
+    if (miniMap) { miniMap.remove(); miniMap = null; mapMarker = null; wilayahLayer = null; }
     const center = (lat && lng) ? [lat, lng] : [-7.18, 111.88];
     const zoom   = (lat && lng) ? 16 : 10;
-    setTimeout(() => {
+    setTimeout(async () => {
       miniMap = L.map('mini-map-b').setView(center, zoom);
       L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         { attribution:'© Esri', maxZoom:19 }).addTo(miniMap);
+
+      // Layer batas kecamatan — murni referensi visual, tidak interaktif (tidak menghalangi klik peta)
+      if (!miniMap.getPane('wilayahPane')) {
+        miniMap.createPane('wilayahPane');
+        miniMap.getPane('wilayahPane').style.zIndex = 350;
+        miniMap.getPane('wilayahPane').style.pointerEvents = 'none';
+      }
+      const wilayahData = await getWilayahGeoJSON();
+      if (wilayahData) {
+        wilayahLayer = L.geoJSON(wilayahData, {
+          pane: 'wilayahPane',
+          interactive: false,
+          style: function(feature) {
+            const namaFitur = (feature.properties.nama_kecamatan || '').toUpperCase();
+            const isAsetKecamatan = kecamatanAset && namaFitur === kecamatanAset.toUpperCase();
+            return isAsetKecamatan
+              ? { color:'#e8c96a', weight:2.5, fillColor:'#e8c96a', fillOpacity:0.18 }
+              : { color:'#94a3b8', weight:1, fillColor:'transparent', fillOpacity:0, dashArray:'4 3' };
+          }
+        }).addTo(miniMap);
+
+        // Kalau belum ada koordinat sama sekali tapi kecamatan sudah dipilih, zoom ke kecamatan itu
+        if (!(lat && lng) && kecamatanAset) {
+          try {
+            const matchLayer = wilayahLayer.getLayers().find(function(l) {
+              return (l.feature.properties.nama_kecamatan || '').toUpperCase() === kecamatanAset.toUpperCase();
+            });
+            if (matchLayer) miniMap.fitBounds(matchLayer.getBounds(), { padding:[20,20] });
+          } catch(e){}
+        }
+      }
+
       if (lat && lng) {
-        mapMarker = L.circleMarker([lat,lng], {radius:8,color:'#C55A11',fillColor:'#F4A460',fillOpacity:.9,weight:2,draggable:true}).addTo(miniMap);
+        mapMarker = L.circleMarker([lat,lng], {radius:8,color:'#C55A11',fillColor:'#F4A460',fillOpacity:.9,weight:2}).addTo(miniMap);
         updateCoord({lat,lng});
       }
       miniMap.on('click', e => {
@@ -645,11 +883,18 @@
       previewFoto(data.Foto_denah || '');
       const lat = parseFloat(data.LAT) || null;
       const lng = parseFloat(data.LONG) || null;
-      initMiniMap(lat, lng);
+      initMiniMap(lat, lng, data.KECAMATAN);
     } else {
-      initMiniMap(null, null);
+      initMiniMap(null, null, null);
     }
   }
+
+  // Saat mode Tambah, kalau user pilih Kecamatan, peta otomatis zoom & highlight ke kecamatan itu
+  document.getElementById('f-KECAMATAN').addEventListener('change', function() {
+    if (currentMode === 'tambah' && miniMap) {
+      initMiniMap(null, null, this.value);
+    }
+  });
 
   // Helper: simpan semua rows ke cache saat render
   let lastRows = [];
@@ -707,6 +952,7 @@
       Foto_denah: document.getElementById('f-Foto_denah').value,
       LAT:  lat  ? parseFloat(lat)  : null,
       LONG: lng  ? parseFloat(lng)  : null,
+      username: getUser().username || getUser().nama_lengkap || 'admin',
     };
 
     try {
@@ -746,12 +992,76 @@
   }
 
   // ── HAPUS ─────────────────────────────────────────────
+
+  // ── ASET TERHAPUS (KIB C) ─────────────────────────────
+  async function openRiwayatTerhapus() {
+    document.getElementById('modal-terhapus').classList.add('open');
+    document.getElementById('terhapus-body').innerHTML =
+      '<div style="text-align:center;padding:32px;color:var(--muted)"><i class="fa fa-spinner fa-spin"></i> Memuat...</div>';
+    try {
+      const res  = await apiFetch('/api/aset/history/deleted/kib_c');
+      const data = await res.json();
+      if (!data.length) {
+        document.getElementById('terhapus-body').innerHTML =
+          '<div style="text-align:center;padding:48px;color:var(--muted)"><i class="fa fa-trash fa-2x" style="opacity:.3;margin-bottom:12px"></i><br>Tidak ada aset terhapus.</div>';
+        return;
+      }
+      document.getElementById('terhapus-body').innerHTML =
+        '<table style="width:100%;border-collapse:collapse;font-size:12px">'
+        + '<thead><tr style="background:var(--bg)">'
+        + '<th style="padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)">NIBAR</th>'
+        + '<th style="padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)">Nama Barang</th>'
+        + '<th style="padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)">Kecamatan</th>'
+        + '<th style="padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)">Dihapus Pada</th>'
+        + '<th style="padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)">Oleh</th>'
+        + '<th style="padding:10px 14px;border-bottom:1px solid var(--border)">Aksi</th>'
+        + '</tr></thead><tbody>'
+        + data.map(function(h) {
+            const d = h.data_lama || {};
+            const waktu = new Date(h.diubah_pada).toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+            return '<tr style="border-bottom:1px solid #f3f4f6">'
+              + '<td style="padding:10px 14px;font-family:monospace;font-size:10px;color:var(--muted)">' + (d.NIBAR||h.aset_id) + '</td>'
+              + '<td style="padding:10px 14px;font-weight:600">' + (d.Nama_Baran||'—') + '</td>'
+              + '<td style="padding:10px 14px">' + (d.KECAMATAN||'—') + '</td>'
+              + '<td style="padding:10px 14px;white-space:nowrap">' + waktu + '</td>'
+              + '<td style="padding:10px 14px">' + (h.diubah_oleh||'—') + '</td>'
+              + '<td style="padding:10px 14px">'
+              + '<button onclick="restoreFromModal(' + h.id + ')" style="padding:5px 12px;background:#dcfce7;border:1px solid #bbf7d0;color:#15803d;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">🔄 Pulihkan</button>'
+              + '</td></tr>';
+          }).join('')
+        + '</tbody></table>';
+    } catch(e) {
+      document.getElementById('terhapus-body').innerHTML =
+        '<div style="text-align:center;padding:32px;color:var(--danger)">Gagal memuat: ' + e.message + '</div>';
+    }
+  }
+
+  async function restoreFromModal(historyId) {
+    if (!confirm('Pulihkan aset ini ke database?')) return;
+    try {
+      const user = getUser();
+      const res  = await apiFetch('/api/aset/history/restore/' + historyId, {
+        method:'POST',
+        body: JSON.stringify({ username: user.username || user.nama_lengkap || 'admin' })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      showToast('✅ Aset berhasil dipulihkan!');
+      closeModal('modal-terhapus');
+      loadData(currentPage);
+    } catch(e) { showToast('Gagal: ' + e.message, 'error'); }
+  }
+
   async function hapusAset(nibarEnc) {
     if (!confirmDelete()) return;
     try {
-      const res = await apiFetch(`/api/aset/bangunan-kib/${nibarEnc}`, { method:'DELETE' });
+      const user = getUser();
+      const res = await apiFetch(`/api/aset/bangunan-kib/${nibarEnc}`, {
+        method:'DELETE',
+        body: JSON.stringify({ username: user.username || user.nama_lengkap || 'admin' })
+      });
       if (!res.ok) throw new Error('Gagal menghapus.');
-      showToast('Aset berhasil dihapus.', 'warning');
+      showToast('Aset berhasil dihapus. Lihat riwayat untuk memulihkan.', 'warning');
       loadData(currentPage);
     } catch(e) { showToast(e.message, 'error'); }
   }
@@ -765,10 +1075,297 @@
     document.querySelector('.sidebar').classList.remove('open');
     document.getElementById('sidebar-overlay').classList.remove('show');
   }
-  // Tutup sidebar saat klik link (mobile)
   document.querySelectorAll('.sidebar-link').forEach(link => {
     link.addEventListener('click', closeSidebar);
   });
+</script>
+
+<script>
+// ══ HISTORY SIDE PANEL ══════════════════════════════════════════
+let historyMaps        = {};
+let currentHistoryId   = null;
+let currentHistoryType = null;
+let currentHistoryNibar= null;
+
+async function openHistory(type, id, label) {
+  currentHistoryType  = type;
+  currentHistoryId    = id;
+  currentHistoryNibar = label || id;
+
+  document.getElementById('hp-nibar').textContent = decodeURIComponent(String(label || id));
+  document.getElementById('hp-info').textContent  = 'Memuat riwayat...';
+  document.getElementById('hp-body').innerHTML    = '<div class="hp-loading"><i class="fa fa-spinner fa-spin"></i> Memuat...</div>';
+  document.getElementById('history-panel').classList.add('open');
+  document.getElementById('hp-overlay').classList.add('show');
+
+  Object.values(historyMaps).forEach(m => { try { m.remove(); } catch(e){} });
+  historyMaps = {};
+
+  await renderHistory();
+}
+
+async function renderHistory() {
+  try {
+    const url = currentHistoryType === 'tanah'
+      ? '/api/aset/history/tanah/' + currentHistoryId
+      : '/api/aset/history/bangunan/' + encodeURIComponent(currentHistoryId);
+    const res  = await apiFetch(url);
+    const data = await res.json();
+
+    document.getElementById('hp-info').textContent = data.length + ' riwayat';
+
+    if (!data.length) {
+      document.getElementById('hp-body').innerHTML =
+        '<div class="hp-empty"><div class="hp-empty-icon">📋</div><p>Belum ada riwayat perubahan.</p></div>';
+      return;
+    }
+
+    // Header dengan tombol hapus semua
+    const tabelParam = currentHistoryType === 'tanah' ? 'kib_a' : 'kib_c';
+    document.getElementById('hp-body').innerHTML =
+      '<div style="display:flex;justify-content:flex-end;margin-bottom:12px">'
+      + '<button onclick="hapusSemuaHistory()" style="padding:5px 12px;background:#fee2e2;border:1px solid #fecaca;color:#b91c1c;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">🗑 Hapus Semua Riwayat</button>'
+      + '</div>'
+      + '<div class="timeline" id="hp-timeline"></div>';
+
+    const timeline = document.getElementById('hp-timeline');
+    Object.values(historyMaps).forEach(m => { try { m.remove(); } catch(e){} });
+    historyMaps = {};
+
+    data.forEach(function(h, idx) {
+      const aksi  = (h.aksi || 'update').toLowerCase();
+      const jenis = (h.jenis_perubahan || '').toLowerCase();
+      const waktu = new Date(h.diubah_pada).toLocaleString('id-ID', {
+        day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'
+      });
+      const isRollback = (h.diubah_oleh || '').includes('rollback');
+      const isRestore  = (h.diubah_oleh || '').includes('restore');
+
+      // Badge utama
+      let badgeMain = '';
+      if (isRestore)         badgeMain = '<span class="tc-badge create">🔄 Dipulihkan</span>';
+      else if (isRollback)   badgeMain = '<span class="tc-badge rollback">↩ Rollback</span>';
+      else if (aksi==='create') badgeMain = '<span class="tc-badge create">✅ Dibuat</span>';
+      else if (aksi==='delete') badgeMain = '<span class="tc-badge delete">🗑 Dihapus</span>';
+      else                   badgeMain = '<span class="tc-badge update">✏ Diperbarui</span>';
+
+      // Badge jenis perubahan (untuk UPDATE)
+      let badgeJenis = '';
+      if (jenis === 'geometri')      badgeJenis = '<span class="tc-badge geom">🗺 Geometri</span>';
+      else if (jenis === 'keduanya') badgeJenis = '<span class="tc-badge keduanya">🔀 Geom+Atribut</span>';
+      else if (jenis === 'atribut' && aksi === 'update') badgeJenis = '<span class="tc-badge update" style="background:#f0fdf4;color:#15803d">📝 Atribut</span>';
+
+      // Diff field atribut
+      let diffHtml = '';
+      const skip = ['geom','geometry','created_at','updated_at','geom_json','row_id','latitude','longitude'];
+      if (h.field_berubah && h.field_berubah.length && h.data_lama && h.data_baru) {
+        const fields = h.field_berubah.filter(function(f){ return !skip.includes(f); }).slice(0, 8);
+        if (fields.length) {
+          diffHtml = '<div class="tc-diff">'
+            + '<div class="tc-diff-title">Field yang berubah (' + fields.length + ')</div>';
+          fields.forEach(function(f) {
+            const lama = String(h.data_lama[f] ?? '—').substring(0, 50);
+            const baru = String(h.data_baru[f] ?? '—').substring(0, 50);
+            diffHtml += '<div class="diff-label">' + f + '</div>'
+              + '<div class="diff-row">'
+              + '<div class="diff-old">' + (lama||'—') + '</div>'
+              + '<div class="diff-new">' + (baru||'—') + '</div>'
+              + '</div>';
+          });
+          diffHtml += '</div>';
+        }
+      }
+
+      // Mini map
+      const hasGeom = h.geom_lama || h.geom_baru;
+      const mapId = 'hmap-' + h.id;
+      let mapHtml = '';
+      if (hasGeom) {
+        mapHtml = '<div class="tc-map-wrap">'
+          + '<div class="tc-map-legend">'
+          + (h.geom_lama ? '<span class="tc-map-leg old">⬤ Posisi Lama</span>' : '')
+          + (h.geom_baru && JSON.stringify(h.geom_lama) !== JSON.stringify(h.geom_baru)
+              ? '<span class="tc-map-leg new">⬤ Posisi Baru</span>' : '')
+          + '</div>'
+          + '<div class="tc-map" id="' + mapId + '"></div>'
+          + '</div>';
+      }
+
+      // Tombol aksi
+      let actionsHtml = '<div class="tc-actions">';
+
+      // Rollback — hanya untuk UPDATE yang punya data_lama
+      if (aksi === 'update' && h.data_lama && !isRollback) {
+        actionsHtml += '<button class="btn-rollback" onclick="doRollback(' + h.id + ')">↩ Rollback</button>';
+      }
+
+      // Restore — hanya untuk DELETE
+      if (aksi === 'delete' && h.data_lama) {
+        actionsHtml += '<button class="btn-restore" onclick="doRestore(' + h.id + ')">🔄 Pulihkan Aset</button>';
+      }
+
+      // Hapus history item
+      actionsHtml += '<button class="btn-del-history" onclick="hapusHistoryItem(' + h.id + ')">🗑</button>';
+      actionsHtml += '</div>';
+
+      const dotClass = isRestore ? 'create' : isRollback ? 'rollback' : aksi;
+
+      const item = document.createElement('div');
+      item.className = 'timeline-item';
+      item.id = 'hist-item-' + h.id;
+      item.innerHTML =
+        '<div class="timeline-dot ' + dotClass + '"></div>'
+        + '<div class="timeline-card">'
+        + '<div class="tc-header">'
+        + '<div style="display:flex;gap:4px;flex-wrap:wrap">' + badgeMain + badgeJenis + '</div>'
+        + '<div class="tc-time">' + waktu + '</div>'
+        + '</div>'
+        + '<div class="tc-user">Oleh: <strong>' + (h.diubah_oleh||'—') + '</strong></div>'
+        + diffHtml + mapHtml + actionsHtml
+        + '</div>';
+      timeline.appendChild(item);
+
+      if (hasGeom) {
+        setTimeout(function() { renderHistoryMap(mapId, h.geom_lama, h.geom_baru); }, 150 + idx * 80);
+      }
+    });
+
+  } catch(e) {
+    document.getElementById('hp-body').innerHTML =
+      '<div class="hp-loading" style="color:var(--danger)">Gagal memuat riwayat: ' + e.message + '</div>';
+  }
+}
+
+function renderHistoryMap(mapId, geomLama, geomBaru) {
+  const el = document.getElementById(mapId);
+  if (!el) return;
+  if (historyMaps[mapId]) return;
+
+  try {
+    const m = L.map(mapId, { zoomControl:false, attributionControl:false, scrollWheelZoom:true });
+    historyMaps[mapId] = m;
+
+    L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      { maxZoom:19 }
+    ).addTo(m);
+
+    let bounds = null;
+
+    if (geomLama) {
+      const l1 = L.geoJSON(geomLama, {
+        style: { color:'#ef4444', weight:2.5, fillColor:'#ef4444', fillOpacity:0.2, dashArray:'6 4' },
+        pointToLayer: function(f,ll) { return L.circleMarker(ll,{radius:9,color:'#ef4444',fillColor:'#ef4444',fillOpacity:0.75,weight:2.5}); }
+      }).addTo(m).bindTooltip('<b>Posisi Lama</b>',{sticky:true});
+      try { bounds = l1.getBounds(); } catch(e){}
+    }
+
+    const geomBerubah = JSON.stringify(geomLama) !== JSON.stringify(geomBaru);
+    if (geomBaru && geomBerubah) {
+      const l2 = L.geoJSON(geomBaru, {
+        style: { color:'#16a34a', weight:2.5, fillColor:'#16a34a', fillOpacity:0.2 },
+        pointToLayer: function(f,ll) { return L.circleMarker(ll,{radius:9,color:'#16a34a',fillColor:'#16a34a',fillOpacity:0.75,weight:2.5}); }
+      }).addTo(m).bindTooltip('<b>Posisi Baru</b>',{sticky:true});
+      try { const b2=l2.getBounds(); bounds=bounds?bounds.extend(b2):b2; } catch(e){}
+    } else if (geomBaru && !geomBerubah) {
+      L.geoJSON(geomBaru, {
+        style: { color:'#1d6fa4', weight:2, fillColor:'#1d6fa4', fillOpacity:0.25 },
+        pointToLayer: function(f,ll) { return L.circleMarker(ll,{radius:9,color:'#1d6fa4',fillColor:'#1d6fa4',fillOpacity:0.75,weight:2}); }
+      }).addTo(m);
+    }
+
+    setTimeout(function() {
+      m.invalidateSize();
+      if (bounds && bounds.isValid()) {
+        m.fitBounds(bounds, { padding:[14,14], maxZoom:17 });
+      } else {
+        m.setView([-7.18, 111.88], 10);
+      }
+    }, 150);
+
+  } catch(e) { console.error('History map error:', mapId, e); }
+}
+
+function closeHistory() {
+  document.getElementById('history-panel').classList.remove('open');
+  document.getElementById('hp-overlay').classList.remove('show');
+  Object.values(historyMaps).forEach(function(m) { try { m.remove(); } catch(e){} });
+  historyMaps = {};
+}
+
+async function doRollback(historyId) {
+  if (!confirm('Rollback ke versi ini?\nData saat ini akan disimpan sebagai riwayat baru.')) return;
+  try {
+    const user = getUser();
+    const res  = await apiFetch('/api/aset/history/rollback/' + historyId, {
+      method:'POST',
+      body: JSON.stringify({ username: (user.username||user.nama_lengkap||'admin') })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    showToast('✅ Rollback berhasil!');
+    Object.values(historyMaps).forEach(function(m){try{m.remove();}catch(e){}});
+    historyMaps = {};
+    await renderHistory();
+    loadData(currentPage);
+  } catch(e) { showToast('Gagal rollback: ' + e.message, 'error'); }
+}
+
+async function doRestore(historyId) {
+  if (!confirm('Pulihkan aset yang sudah dihapus ini?\nAset akan dikembalikan ke database.')) return;
+  try {
+    const user = getUser();
+    const res  = await apiFetch('/api/aset/history/restore/' + historyId, {
+      method:'POST',
+      body: JSON.stringify({ username: (user.username||user.nama_lengkap||'admin') })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    showToast('✅ Aset berhasil dipulihkan!');
+    Object.values(historyMaps).forEach(function(m){try{m.remove();}catch(e){}});
+    historyMaps = {};
+    await renderHistory();
+    loadData(currentPage);
+  } catch(e) { showToast('Gagal pulihkan: ' + e.message, 'error'); }
+}
+
+async function hapusHistoryItem(historyId) {
+  if (!confirm('Hapus riwayat ini?')) return;
+  try {
+    const res  = await apiFetch('/api/aset/history/' + historyId, { method:'DELETE' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    showToast('Riwayat dihapus.', 'warning');
+    const el = document.getElementById('hist-item-' + historyId);
+    if (el) el.remove();
+    // Update counter
+    const timeline = document.getElementById('hp-timeline');
+    if (timeline) {
+      const sisa = timeline.querySelectorAll('.timeline-item').length;
+      document.getElementById('hp-info').textContent = sisa + ' riwayat';
+      if (!sisa) {
+        document.getElementById('hp-body').innerHTML =
+          '<div class="hp-empty"><div class="hp-empty-icon">📋</div><p>Belum ada riwayat perubahan.</p></div>';
+      }
+    }
+  } catch(e) { showToast('Gagal hapus: ' + e.message, 'error'); }
+}
+
+async function hapusSemuaHistory() {
+  if (!confirm('Hapus SEMUA riwayat perubahan aset ini?\nTindakan tidak dapat dibatalkan.')) return;
+  try {
+    const tabelParam = currentHistoryType === 'tanah' ? 'kib_a' : 'kib_c';
+    const idParam    = encodeURIComponent(currentHistoryId);
+    const res  = await apiFetch('/api/aset/history/clear/' + tabelParam + '/' + idParam, { method:'DELETE' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    showToast('Semua riwayat dihapus.', 'warning');
+    document.getElementById('hp-info').textContent = '0 riwayat';
+    document.getElementById('hp-body').innerHTML =
+      '<div class="hp-empty"><div class="hp-empty-icon">📋</div><p>Belum ada riwayat perubahan.</p></div>';
+  } catch(e) { showToast('Gagal hapus semua: ' + e.message, 'error'); }
+}
+
 </script>
 </body>
 </html>
